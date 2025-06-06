@@ -2,13 +2,13 @@ name: Security & Dependencies
 
 on:
   schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+  # Run daily at 2 AM UTC
+  - cron: '0 2 * * *'
   workflow_dispatch:
   push:
     paths:
-      - 'package.json'
-      - 'bun.lockb'
+    - 'package.json'
+    - 'bun.lockb'
 
 env:
   BUN_VERSION: "1.2.12"
@@ -17,88 +17,88 @@ jobs:
   dependency-audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
 
-      - name: Run security audit
-        run: |
-          echo "## Security Audit Results 🔒" >> $GITHUB_STEP_SUMMARY
+    - name: Run security audit
+      run: |
+        echo "## Security Audit Results 🔒" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Run audit and capture output
+        if bun audit > audit-results.txt 2>&1; then
+          echo "✅ No security vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Security audit completed with findings" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Run audit and capture output
-          if bun audit > audit-results.txt 2>&1; then
-            echo "✅ No security vulnerabilities found" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Security audit completed with findings" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Audit Results:" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            head -20 audit-results.txt >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No detailed results available"
-            echo '```' >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "### Audit Results:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          head -20 audit-results.txt >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No detailed results available"
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        fi
 
-      - name: Upload audit results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: security-audit-results
-          path: audit-results.json
-          retention-days: 30
+    - name: Upload audit results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-audit-results
+        path: audit-results.json
+        retention-days: 30
 
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: moderate
-          comment-summary-in-pr: true
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: moderate
+        comment-summary-in-pr: true
 
   license-check:
     name: License Compliance
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+    - name: Install dependencies
+      run: bun install --frozen-lockfile
 
-      - name: Check licenses
-        run: |
-          echo "## License Compliance Check 📄" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Get list of all dependencies and their licenses
-          bunx license-checker --json --out licenses.json || echo "license-checker not available, skipping detailed check"
-          
-          # Basic license validation
-          FORBIDDEN_LICENSES=("GPL-3.0" "AGPL-3.0" "LGPL-3.0")
-          
-          echo "### Dependencies Summary:" >> $GITHUB_STEP_SUMMARY
-          echo "- Runtime dependencies: $(bun run --silent -e "console.log(Object.keys(require('./package.json').dependencies || {}).length)")" >> $GITHUB_STEP_SUMMARY
-          echo "- Development dependencies: $(bun run --silent -e "console.log(Object.keys(require('./package.json').devDependencies || {}).length)")" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ No license conflicts detected" >> $GITHUB_STEP_SUMMARY
+    - name: Check licenses
+      run: |
+        echo "## License Compliance Check 📄" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Get list of all dependencies and their licenses
+        bunx license-checker --json --out licenses.json || echo "license-checker not available, skipping detailed check"
+
+        # Basic license validation
+        FORBIDDEN_LICENSES=("GPL-3.0" "AGPL-3.0" "LGPL-3.0")
+
+        echo "### Dependencies Summary:" >> $GITHUB_STEP_SUMMARY
+        echo "- Runtime dependencies: $(bun run --silent -e "console.log(Object.keys(require('./package.json').dependencies || {}).length)")" >> $GITHUB_STEP_SUMMARY
+        echo "- Development dependencies: $(bun run --silent -e "console.log(Object.keys(require('./package.json').devDependencies || {}).length)")" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ No license conflicts detected" >> $GITHUB_STEP_SUMMARY
 
   security-scorecard:
     name: OpenSSF Scorecard
@@ -109,140 +109,140 @@ jobs:
       actions: read
       contents: read
     if: github.event_name != 'pull_request'
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
-      - name: Run analysis
-        uses: ossf/scorecard-action@v2.3.1
-        with:
-          results_file: results.sarif
-          results_format: sarif
-          publish_results: true
+    - name: Run analysis
+      uses: ossf/scorecard-action@v2.3.1
+      with:
+        results_file: results.sarif
+        results_format: sarif
+        publish_results: true
 
-      - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: results.sarif
+    - name: Upload SARIF results
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: results.sarif
 
   vulnerability-scan:
     name: Vulnerability Scan
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
 
-      - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
 
   update-dependencies:
     name: Update Dependencies
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
-    
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: ${{ env.BUN_VERSION }}
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: ${{ env.BUN_VERSION }}
 
-      - name: Update dependencies
-        run: |
-          echo "Checking for dependency updates..."
-          
-          # Update dev dependencies
-          bun update --development
-          
-          # Check if there are any changes
-          if git diff --quiet package.json bun.lockb; then
-            echo "No dependency updates available"
-            exit 0
-          fi
+    - name: Update dependencies
+      run: |
+        echo "Checking for dependency updates..."
 
-      - name: Run tests with updated dependencies
-        run: |
-          bun install
-          bun run typecheck
-          bun run lint
-          bun test
+        # Update dev dependencies
+        bun update --development
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: update dependencies'
-          title: 'chore: automated dependency updates'
-          body: |
-            ## Automated Dependency Updates 🤖
-            
-            This PR contains automated updates to project dependencies.
-            
-            ### Changes
-            - Updated development dependencies to latest versions
-            - All tests pass with updated dependencies
-            
-            ### Verification
-            - ✅ TypeScript compilation successful
-            - ✅ Linting passes
-            - ✅ All tests passing
-            
-            This PR was automatically created by the security workflow.
-          branch: chore/dependency-updates
-          delete-branch: true
+        # Check if there are any changes
+        if git diff --quiet package.json bun.lockb; then
+          echo "No dependency updates available"
+          exit 0
+        fi
+
+    - name: Run tests with updated dependencies
+      run: |
+        bun install
+        bun run typecheck
+        bun run lint
+        bun test
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies'
+        title: 'chore: automated dependency updates'
+        body: |
+          ## Automated Dependency Updates 🤖
+
+          This PR contains automated updates to project dependencies.
+
+          ### Changes
+          - Updated development dependencies to latest versions
+          - All tests pass with updated dependencies
+
+          ### Verification
+          - ✅ TypeScript compilation successful
+          - ✅ Linting passes
+          - ✅ All tests passing
+
+          This PR was automatically created by the security workflow.
+        branch: chore/dependency-updates
+        delete-branch: true
 
   security-summary:
     name: Security Summary
     runs-on: ubuntu-latest
-    needs: [dependency-audit, license-check, vulnerability-scan]
+    needs: [ dependency-audit, license-check, vulnerability-scan ]
     if: always()
-    
+
     steps:
-      - name: Generate Security Report
-        run: |
-          echo "## Security Summary 🛡️" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Scan Results:" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ needs.dependency-audit.result }}" = "success" ]; then
-            echo "- ✅ Dependency audit passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ❌ Dependency audit failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.license-check.result }}" = "success" ]; then
-            echo "- ✅ License compliance verified" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ❌ License compliance issues found" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.vulnerability-scan.result }}" = "success" ]; then
-            echo "- ✅ Vulnerability scan completed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ❌ Vulnerability scan found issues" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "- Review any identified vulnerabilities in the Security tab" >> $GITHUB_STEP_SUMMARY
-          echo "- Check for available dependency updates" >> $GITHUB_STEP_SUMMARY
-          echo "- Monitor for new security advisories" >> $GITHUB_STEP_SUMMARY
+    - name: Generate Security Report
+      run: |
+        echo "## Security Summary 🛡️" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Scan Results:" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ needs.dependency-audit.result }}" = "success" ]; then
+          echo "- ✅ Dependency audit passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- ❌ Dependency audit failed" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ needs.license-check.result }}" = "success" ]; then
+          echo "- ✅ License compliance verified" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- ❌ License compliance issues found" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ needs.vulnerability-scan.result }}" = "success" ]; then
+          echo "- ✅ Vulnerability scan completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- ❌ Vulnerability scan found issues" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+        echo "- Review any identified vulnerabilities in the Security tab" >> $GITHUB_STEP_SUMMARY
+        echo "- Check for available dependency updates" >> $GITHUB_STEP_SUMMARY
+        echo "- Monitor for new security advisories" >> $GITHUB_STEP_SUMMARY
