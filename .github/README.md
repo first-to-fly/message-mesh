@@ -26,13 +26,6 @@ This directory contains GitHub Actions workflows and automation for the Message-
 - **Documentation Quality**: Coverage and link checking
 - **Quality Gates**: Combined quality scoring
 
-#### 5. **PR Automation** (`pr-automation.yml`)
-**Triggers:** PR events, Issue comments
-- **PR Validation**: Title format, description checks
-- **Auto Labeling**: Size, type, and scope labels
-- **Conflict Detection**: Merge conflict alerts
-- **Command Handler**: Bot commands (`/rerun`, `/ready`, `/hold`)
-- **Auto Assignment**: Reviewer assignment based on changes
 
 ### Automation Features
 
@@ -60,27 +53,6 @@ Use these commands in PR comments:
 - **Code Scanning**: CodeQL and Trivy analysis
 - **Scorecard**: OpenSSF security best practices
 
-## 📋 Issue Templates
-
-### Bug Report (`bug_report.yml`)
-Structured template for bug reports with:
-- Platform selection (WhatsApp, Messenger, Instagram)
-- Runtime environment details
-- Reproduction steps
-- Code samples
-
-### Feature Request (`feature_request.yml`)
-Comprehensive template for new features:
-- Problem statement and proposed solution
-- Platform scope and use cases
-- API design proposals
-- Implementation complexity estimation
-
-### Documentation (`documentation.yml`)
-Template for documentation issues:
-- Documentation type and location
-- Current vs. proposed content
-- Target audience identification
 
 ## 🔧 Configuration Files
 

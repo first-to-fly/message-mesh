@@ -65,8 +65,8 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
-      
+      const result = (await response.json()) as WhatsAppApiResponse;
+
       return {
         success: true,
         messageId: result.messages?.[0]?.id,
@@ -106,8 +106,8 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
-      
+      const result = (await response.json()) as WhatsAppApiResponse;
+
       return {
         success: true,
         messageId: result.messages?.[0]?.id,
@@ -144,8 +144,8 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
-      
+      const result = (await response.json()) as WhatsAppApiResponse;
+
       return {
         success: true,
         messageId: result.messages?.[0]?.id,
@@ -179,8 +179,8 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
-      
+      const result = (await response.json()) as WhatsAppApiResponse;
+
       return {
         success: true,
         messageId: result.messages?.[0]?.id,
@@ -217,8 +217,8 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
-      
+      const result = (await response.json()) as WhatsAppApiResponse;
+
       return {
         success: true,
         messageId: result.messages?.[0]?.id,
@@ -252,8 +252,8 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
-      
+      const result = (await response.json()) as WhatsAppApiResponse;
+
       return {
         success: true,
         messageId: result.messages?.[0]?.id,
@@ -267,9 +267,9 @@ export class WhatsAppService implements IWhatsAppService {
     // Use security utilities for enhanced validation
     SecurityUtils.validateAccessToken(options.accessToken, "whatsapp");
     SecurityUtils.validateUserId(options.to, "whatsapp");
-    
+
     const sanitizedMessage = SecurityUtils.validateMessageContent(options.message, "whatsapp");
-    
+
     // Validate WhatsApp phone number format
     if (!/^\+\d{1,15}$/.test(options.to.trim())) {
       throw new MessageMeshError(
@@ -278,12 +278,12 @@ export class WhatsAppService implements IWhatsAppService {
         "Recipient must be a valid WhatsApp phone number in E.164 format (e.g., +1234567890)"
       );
     }
-    
+
     // Validate and sanitize metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "whatsapp");
     }
-    
+
     // Update the message content with sanitized version
     options.message = sanitizedMessage;
   }
@@ -291,7 +291,7 @@ export class WhatsAppService implements IWhatsAppService {
   private validateTemplateOptions(options: WhatsAppTemplateOptions): void {
     SecurityUtils.validateAccessToken(options.accessToken, "whatsapp");
     SecurityUtils.validateUserId(options.to, "whatsapp");
-    
+
     // Validate WhatsApp phone number format
     if (!/^\+\d{1,15}$/.test(options.to.trim())) {
       throw new MessageMeshError(
@@ -300,23 +300,23 @@ export class WhatsAppService implements IWhatsAppService {
         "Recipient must be a valid WhatsApp phone number in E.164 format"
       );
     }
-    
+
     // Validate template name and language
     const sanitizedTemplateName = SecurityUtils.sanitizeText(options.templateName);
     const sanitizedTemplateLanguage = SecurityUtils.sanitizeText(options.templateLanguage);
-    
+
     if (!sanitizedTemplateName) {
       throw new MessageMeshError("INVALID_TEMPLATE", "whatsapp", "Template name is required");
     }
     if (!sanitizedTemplateLanguage) {
       throw new MessageMeshError("INVALID_TEMPLATE", "whatsapp", "Template language is required");
     }
-    
+
     // Validate metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "whatsapp");
     }
-    
+
     // Update with sanitized values
     options.templateName = sanitizedTemplateName;
     options.templateLanguage = sanitizedTemplateLanguage;
@@ -334,7 +334,11 @@ export class WhatsAppService implements IWhatsAppService {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
     }
     if (!options.to?.trim()) {
-      throw new MessageMeshError("INVALID_RECIPIENT", "whatsapp", "Recipient phone number is required");
+      throw new MessageMeshError(
+        "INVALID_RECIPIENT",
+        "whatsapp",
+        "Recipient phone number is required"
+      );
     }
     if (!options.messageId?.trim()) {
       throw new MessageMeshError("INVALID_MESSAGE_ID", "whatsapp", "Message ID is required");
@@ -347,7 +351,7 @@ export class WhatsAppService implements IWhatsAppService {
   private validateMediaOptions(options: WhatsAppMediaOptions): void {
     SecurityUtils.validateAccessToken(options.accessToken, "whatsapp");
     SecurityUtils.validateUserId(options.to, "whatsapp");
-    
+
     // Validate WhatsApp phone number format
     if (!/^\+\d{1,15}$/.test(options.to.trim())) {
       throw new MessageMeshError(
@@ -356,21 +360,29 @@ export class WhatsAppService implements IWhatsAppService {
         "Recipient must be a valid WhatsApp phone number in E.164 format"
       );
     }
-    
+
     if (!options.mediaUrl && !options.mediaPath) {
-      throw new MessageMeshError("INVALID_MEDIA", "whatsapp", "Either media URL or media path is required");
+      throw new MessageMeshError(
+        "INVALID_MEDIA",
+        "whatsapp",
+        "Either media URL or media path is required"
+      );
     }
-    
+
     // Validate media URL if provided
     if (options.mediaUrl) {
       SecurityUtils.validateUrl(options.mediaUrl, "whatsapp");
     }
-    
+
     const validTypes = ["image", "video", "audio", "document"];
     if (!validTypes.includes(options.mediaType)) {
-      throw new MessageMeshError("INVALID_MEDIA_TYPE", "whatsapp", `Invalid media type. Must be one of: ${validTypes.join(", ")}`);
+      throw new MessageMeshError(
+        "INVALID_MEDIA_TYPE",
+        "whatsapp",
+        `Invalid media type. Must be one of: ${validTypes.join(", ")}`
+      );
     }
-    
+
     // Sanitize optional fields
     if (options.caption) {
       options.caption = SecurityUtils.sanitizeText(options.caption);
@@ -378,7 +390,7 @@ export class WhatsAppService implements IWhatsAppService {
     if (options.filename) {
       options.filename = SecurityUtils.sanitizeText(options.filename);
     }
-    
+
     // Validate metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "whatsapp");
@@ -390,7 +402,11 @@ export class WhatsAppService implements IWhatsAppService {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
     }
     if (!options.to?.trim()) {
-      throw new MessageMeshError("INVALID_RECIPIENT", "whatsapp", "Recipient phone number is required");
+      throw new MessageMeshError(
+        "INVALID_RECIPIENT",
+        "whatsapp",
+        "Recipient phone number is required"
+      );
     }
     if (!options.emoji?.trim()) {
       throw new MessageMeshError("INVALID_EMOJI", "whatsapp", "Emoji is required");

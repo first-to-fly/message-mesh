@@ -1,9 +1,9 @@
 import type { IInstagramService } from "../interfaces.js";
-import type { 
-  SendMessageResponse, 
+import type {
+  SendMessageResponse,
   InstagramMessageOptions,
   InstagramMediaOptions,
-  InstagramReplyOptions
+  InstagramReplyOptions,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -55,7 +55,7 @@ export class InstagramService implements IInstagramService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { message_id?: string };
+        const data = (await response.json()) as { message_id?: string };
         return {
           success: true,
           messageId: data.message_id,
@@ -77,7 +77,7 @@ export class InstagramService implements IInstagramService {
       this.validateMediaOptions(options);
 
       const instagramAccountId = await this.extractInstagramAccountId(options.accessToken);
-      
+
       // Build attachment object based on media type
       const attachment: {
         type: string;
@@ -88,7 +88,7 @@ export class InstagramService implements IInstagramService {
         };
       } = {
         type: options.type,
-        payload: {}
+        payload: {},
       };
 
       // Use media URL or media ID
@@ -103,7 +103,7 @@ export class InstagramService implements IInstagramService {
         attachment: typeof attachment;
         text?: string;
       } = {
-        attachment
+        attachment,
       };
 
       // Add caption for images and videos
@@ -130,7 +130,7 @@ export class InstagramService implements IInstagramService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { message_id?: string, attachment_id?: string };
+        const data = (await response.json()) as { message_id?: string; attachment_id?: string };
         return {
           success: true,
           messageId: data.message_id,
@@ -160,8 +160,8 @@ export class InstagramService implements IInstagramService {
         message: {
           text: options.message,
           reply_to: {
-            mid: options.replyToMessageId
-          }
+            mid: options.replyToMessageId,
+          },
         },
         metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
       };
@@ -177,7 +177,7 @@ export class InstagramService implements IInstagramService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { message_id?: string };
+        const data = (await response.json()) as { message_id?: string };
         return {
           success: true,
           messageId: data.message_id,
@@ -205,11 +205,11 @@ export class InstagramService implements IInstagramService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { id?: string };
+        const data = (await response.json()) as { id?: string };
         if (!data.id) {
           throw new MessageMeshError(
             "INVALID_ACCESS_TOKEN",
-            "instagram", 
+            "instagram",
             "Unable to extract Instagram account ID from access token"
           );
         }
@@ -237,32 +237,32 @@ export class InstagramService implements IInstagramService {
     // Use security utilities for enhanced validation
     SecurityUtils.validateAccessToken(options.accessToken, "instagram");
     SecurityUtils.validateUserId(options.to, "instagram");
-    
+
     const sanitizedMessage = SecurityUtils.validateMessageContent(options.message, "instagram");
-    
+
     // Instagram-specific validations
     if (sanitizedMessage.length > 1000) {
       throw new MessageMeshError(
-        "MESSAGE_TOO_LONG", 
-        "instagram", 
+        "MESSAGE_TOO_LONG",
+        "instagram",
         "Message content cannot exceed 1000 characters for Instagram"
       );
     }
-    
+
     // Validate IGSID format (should be numeric for Instagram Scoped User ID)
     if (!/^\d+$/.test(options.to.trim())) {
       throw new MessageMeshError(
-        "INVALID_RECIPIENT", 
-        "instagram", 
+        "INVALID_RECIPIENT",
+        "instagram",
         "Recipient ID must be a valid Instagram Scoped User ID (IGSID)"
       );
     }
-    
+
     // Validate and sanitize metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "instagram");
     }
-    
+
     // Update the message content with sanitized version
     options.message = sanitizedMessage;
   }
@@ -271,7 +271,7 @@ export class InstagramService implements IInstagramService {
     // Use security utilities for basic validation
     SecurityUtils.validateAccessToken(options.accessToken, "instagram");
     SecurityUtils.validateUserId(options.to, "instagram");
-    
+
     // Validate media source
     if (!options.mediaUrl && !options.mediaId) {
       throw new MessageMeshError(
@@ -280,7 +280,7 @@ export class InstagramService implements IInstagramService {
         "Either mediaUrl or mediaId must be provided"
       );
     }
-    
+
     // Validate media URL if provided
     if (options.mediaUrl) {
       try {
@@ -293,14 +293,10 @@ export class InstagramService implements IInstagramService {
           );
         }
       } catch {
-        throw new MessageMeshError(
-          "INVALID_MEDIA_URL",
-          "instagram",
-          "Invalid media URL format"
-        );
+        throw new MessageMeshError("INVALID_MEDIA_URL", "instagram", "Invalid media URL format");
       }
     }
-    
+
     // Validate media type
     const validTypes = ["image", "video", "audio"];
     if (!validTypes.includes(options.type)) {
@@ -310,13 +306,15 @@ export class InstagramService implements IInstagramService {
         `Invalid media type: ${options.type}. Must be one of: ${validTypes.join(", ")}`
       );
     }
-    
+
     // Instagram specific: Audio is limited
     if (options.type === "audio") {
       // Note: Instagram has limited support for audio messages
-      console.warn("Instagram has limited support for audio messages. Consider using video instead.");
+      console.warn(
+        "Instagram has limited support for audio messages. Consider using video instead."
+      );
     }
-    
+
     // Validate caption length if provided
     if (options.caption && options.caption.length > 2200) {
       throw new MessageMeshError(
@@ -325,7 +323,7 @@ export class InstagramService implements IInstagramService {
         "Caption cannot exceed 2200 characters"
       );
     }
-    
+
     // Validate metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "instagram");
@@ -338,9 +336,9 @@ export class InstagramService implements IInstagramService {
       accessToken: options.accessToken,
       to: options.to,
       message: options.message,
-      metadata: options.metadata
+      metadata: options.metadata,
     });
-    
+
     // Validate reply message ID
     if (!options.replyToMessageId || options.replyToMessageId.trim().length === 0) {
       throw new MessageMeshError(
@@ -366,7 +364,7 @@ export class InstagramService implements IInstagramService {
     // Handle HTTP-specific errors
     if (error && typeof error === "object" && "status" in error) {
       const httpError = error as { status: number; data?: unknown };
-      
+
       // Map common Instagram API error responses
       switch (httpError.status) {
         case 400:
