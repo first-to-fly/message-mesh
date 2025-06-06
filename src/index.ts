@@ -11,7 +11,12 @@ export type {
   WhatsAppMediaOptions,
   WhatsAppEmojiOptions,
   MessengerMessageOptions,
+  MessengerMediaOptions,
+  MessengerTemplateOptions,
+  MessengerReplyOptions,
   InstagramMessageOptions,
+  InstagramMediaOptions,
+  InstagramReplyOptions,
   TemplateComponent,
   TemplateParameter,
 } from "./types.js";

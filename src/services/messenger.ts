@@ -1,5 +1,11 @@
 import type { IMessengerService } from "../interfaces.js";
-import type { SendMessageResponse, MessengerMessageOptions } from "../types.js";
+import type { 
+  SendMessageResponse, 
+  MessengerMessageOptions,
+  MessengerMediaOptions,
+  MessengerTemplateOptions,
+  MessengerReplyOptions
+} from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
 import { SecurityUtils } from "../security.js";
@@ -33,7 +39,7 @@ export class MessengerService implements IMessengerService {
         recipient: {
           id: options.to,
         },
-        messaging_type: "MESSAGE_TAG",
+        messaging_type: "RESPONSE",
         message: {
           text: options.message,
         },
@@ -62,6 +68,231 @@ export class MessengerService implements IMessengerService {
         "SEND_FAILED",
         "messenger",
         `Failed to send message: ${response.status}`
+      );
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async sendMedia(options: MessengerMediaOptions): Promise<SendMessageResponse> {
+    try {
+      this.validateMediaOptions(options);
+
+      const pageId = await this.extractPageId(options.accessToken);
+      
+      // Build attachment object based on media type
+      const attachment: {
+        type: string;
+        payload: {
+          url?: string;
+          is_reusable?: boolean;
+          attachment_id?: string;
+        };
+      } = {
+        type: options.type === "file" ? "file" : options.type,
+        payload: {}
+      };
+
+      // Use media URL or media ID
+      if (options.mediaUrl) {
+        attachment.payload.url = options.mediaUrl;
+        attachment.payload.is_reusable = true;
+      } else if (options.mediaId) {
+        attachment.payload.attachment_id = options.mediaId;
+      }
+
+      const message: {
+        attachment: typeof attachment;
+        text?: string;
+      } = {
+        attachment
+      };
+
+      // Add caption for images and videos
+      if (options.caption && (options.type === "image" || options.type === "video")) {
+        message.text = options.caption;
+      }
+
+      const payload = {
+        recipient: {
+          id: options.to,
+        },
+        messaging_type: "RESPONSE",
+        message,
+        metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
+      };
+
+      const response = await this.httpClient.post(
+        `${MessengerService.BASE_URL}/${pageId}/messages`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "messenger"
+      );
+
+      if (response.status === 200) {
+        const data = await response.json() as { message_id?: string, attachment_id?: string };
+        return {
+          success: true,
+          messageId: data.message_id,
+          attachmentId: data.attachment_id,
+        };
+      }
+
+      throw new MessageMeshError(
+        "SEND_FAILED",
+        "messenger",
+        `Failed to send media: ${response.status}`
+      );
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async sendTemplate(options: MessengerTemplateOptions): Promise<SendMessageResponse> {
+    try {
+      this.validateTemplateOptions(options);
+
+      const pageId = await this.extractPageId(options.accessToken);
+      
+      let template: {
+        type: string;
+        payload: {
+          template_type: string;
+          text?: string;
+          buttons?: Array<{
+            type: string;
+            title: string;
+            url?: string;
+            payload?: string;
+            phoneNumber?: string;
+          }>;
+          elements?: Array<{
+            title: string;
+            subtitle?: string;
+            imageUrl?: string;
+            buttons?: Array<{
+              type: string;
+              title: string;
+              url?: string;
+              payload?: string;
+            }>;
+          }>;
+        };
+      };
+
+      switch (options.templateType) {
+        case "button":
+          template = {
+            type: "template",
+            payload: {
+              template_type: "button",
+              text: options.text || "",
+              buttons: options.buttons
+            }
+          };
+          break;
+        
+        case "generic":
+          template = {
+            type: "template",
+            payload: {
+              template_type: "generic",
+              elements: options.elements
+            }
+          };
+          break;
+        
+        default:
+          throw new MessageMeshError(
+            "UNSUPPORTED_TEMPLATE_TYPE",
+            "messenger",
+            `Template type ${options.templateType} is not yet supported`
+          );
+      }
+
+      const payload = {
+        recipient: {
+          id: options.to,
+        },
+        messaging_type: "RESPONSE",
+        message: {
+          attachment: template
+        },
+        metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
+      };
+
+      const response = await this.httpClient.post(
+        `${MessengerService.BASE_URL}/${pageId}/messages`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "messenger"
+      );
+
+      if (response.status === 200) {
+        const data = await response.json() as { message_id?: string };
+        return {
+          success: true,
+          messageId: data.message_id,
+        };
+      }
+
+      throw new MessageMeshError(
+        "SEND_FAILED",
+        "messenger",
+        `Failed to send template: ${response.status}`
+      );
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async replyMessage(options: MessengerReplyOptions): Promise<SendMessageResponse> {
+    try {
+      this.validateReplyOptions(options);
+
+      const pageId = await this.extractPageId(options.accessToken);
+      const payload = {
+        recipient: {
+          id: options.to,
+        },
+        messaging_type: "RESPONSE",
+        message: {
+          text: options.message,
+          reply_to: {
+            mid: options.replyToMessageId
+          }
+        },
+        metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
+      };
+
+      const response = await this.httpClient.post(
+        `${MessengerService.BASE_URL}/${pageId}/messages`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "messenger"
+      );
+
+      if (response.status === 200) {
+        const data = await response.json() as { message_id?: string };
+        return {
+          success: true,
+          messageId: data.message_id,
+        };
+      }
+
+      throw new MessageMeshError(
+        "SEND_FAILED",
+        "messenger",
+        `Failed to send reply: ${response.status}`
       );
     } catch (error) {
       return this.handleError(error);
@@ -141,6 +372,149 @@ export class MessengerService implements IMessengerService {
     options.message = sanitizedMessage;
   }
 
+  private validateMediaOptions(options: MessengerMediaOptions): void {
+    // Use security utilities for basic validation
+    SecurityUtils.validateAccessToken(options.accessToken, "messenger");
+    SecurityUtils.validateUserId(options.to, "messenger");
+    
+    // Validate media source
+    if (!options.mediaUrl && !options.mediaId) {
+      throw new MessageMeshError(
+        "MISSING_MEDIA_SOURCE",
+        "messenger",
+        "Either mediaUrl or mediaId must be provided"
+      );
+    }
+    
+    // Validate media URL if provided
+    if (options.mediaUrl) {
+      try {
+        new URL(options.mediaUrl);
+        if (!options.mediaUrl.startsWith("https://")) {
+          throw new MessageMeshError(
+            "INVALID_MEDIA_URL",
+            "messenger",
+            "Media URL must use HTTPS protocol"
+          );
+        }
+      } catch {
+        throw new MessageMeshError(
+          "INVALID_MEDIA_URL",
+          "messenger",
+          "Invalid media URL format"
+        );
+      }
+    }
+    
+    // Validate media type
+    const validTypes = ["image", "video", "audio", "file"];
+    if (!validTypes.includes(options.type)) {
+      throw new MessageMeshError(
+        "INVALID_MEDIA_TYPE",
+        "messenger",
+        `Invalid media type: ${options.type}. Must be one of: ${validTypes.join(", ")}`
+      );
+    }
+    
+    // Validate caption length if provided
+    if (options.caption && options.caption.length > 1000) {
+      throw new MessageMeshError(
+        "CAPTION_TOO_LONG",
+        "messenger",
+        "Caption cannot exceed 1000 characters"
+      );
+    }
+    
+    // Validate metadata if present
+    if (options.metadata) {
+      SecurityUtils.validateMetadata(options.metadata, "messenger");
+    }
+  }
+
+  private validateTemplateOptions(options: MessengerTemplateOptions): void {
+    // Use security utilities for basic validation
+    SecurityUtils.validateAccessToken(options.accessToken, "messenger");
+    SecurityUtils.validateUserId(options.to, "messenger");
+    
+    // Validate template type
+    const validTypes = ["generic", "button", "receipt", "airline"];
+    if (!validTypes.includes(options.templateType)) {
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_TYPE",
+        "messenger",
+        `Invalid template type: ${options.templateType}. Must be one of: ${validTypes.join(", ")}`
+      );
+    }
+    
+    // Type-specific validations
+    switch (options.templateType) {
+      case "button":
+        if (!options.text) {
+          throw new MessageMeshError(
+            "MISSING_TEMPLATE_TEXT",
+            "messenger",
+            "Button template requires text"
+          );
+        }
+        if (!options.buttons || options.buttons.length === 0) {
+          throw new MessageMeshError(
+            "MISSING_TEMPLATE_BUTTONS",
+            "messenger",
+            "Button template requires at least one button"
+          );
+        }
+        if (options.buttons.length > 3) {
+          throw new MessageMeshError(
+            "TOO_MANY_BUTTONS",
+            "messenger",
+            "Button template supports maximum 3 buttons"
+          );
+        }
+        break;
+        
+      case "generic":
+        if (!options.elements || options.elements.length === 0) {
+          throw new MessageMeshError(
+            "MISSING_TEMPLATE_ELEMENTS",
+            "messenger",
+            "Generic template requires at least one element"
+          );
+        }
+        if (options.elements.length > 10) {
+          throw new MessageMeshError(
+            "TOO_MANY_ELEMENTS",
+            "messenger",
+            "Generic template supports maximum 10 elements"
+          );
+        }
+        break;
+    }
+    
+    // Validate metadata if present
+    if (options.metadata) {
+      SecurityUtils.validateMetadata(options.metadata, "messenger");
+    }
+  }
+
+  private validateReplyOptions(options: MessengerReplyOptions): void {
+    // Reuse message validation
+    this.validateMessageOptions({
+      accessToken: options.accessToken,
+      to: options.to,
+      message: options.message,
+      metadata: options.metadata
+    });
+    
+    // Validate reply message ID
+    if (!options.replyToMessageId || options.replyToMessageId.trim().length === 0) {
+      throw new MessageMeshError(
+        "MISSING_REPLY_MESSAGE_ID",
+        "messenger",
+        "Reply message ID is required"
+      );
+    }
+  }
+
   private handleError(error: unknown): SendMessageResponse {
     if (error instanceof MessageMeshError) {
       return {
@@ -155,7 +529,7 @@ export class MessengerService implements IMessengerService {
 
     // Handle HTTP-specific errors
     if (error && typeof error === "object" && "status" in error) {
-      const httpError = error as { status: number; data?: any };
+      const httpError = error as { status: number; data?: unknown };
       
       // Map common Messenger API error responses
       switch (httpError.status) {
