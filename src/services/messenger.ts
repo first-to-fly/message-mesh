@@ -1,10 +1,10 @@
 import type { IMessengerService } from "../interfaces.js";
-import type { 
-  SendMessageResponse, 
+import type {
+  SendMessageResponse,
   MessengerMessageOptions,
   MessengerMediaOptions,
   MessengerTemplateOptions,
-  MessengerReplyOptions
+  MessengerReplyOptions,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -57,7 +57,7 @@ export class MessengerService implements IMessengerService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { message_id?: string };
+        const data = (await response.json()) as { message_id?: string };
         return {
           success: true,
           messageId: data.message_id,
@@ -79,7 +79,7 @@ export class MessengerService implements IMessengerService {
       this.validateMediaOptions(options);
 
       const pageId = await this.extractPageId(options.accessToken);
-      
+
       // Build attachment object based on media type
       const attachment: {
         type: string;
@@ -90,7 +90,7 @@ export class MessengerService implements IMessengerService {
         };
       } = {
         type: options.type === "file" ? "file" : options.type,
-        payload: {}
+        payload: {},
       };
 
       // Use media URL or media ID
@@ -105,7 +105,7 @@ export class MessengerService implements IMessengerService {
         attachment: typeof attachment;
         text?: string;
       } = {
-        attachment
+        attachment,
       };
 
       // Add caption for images and videos
@@ -133,7 +133,7 @@ export class MessengerService implements IMessengerService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { message_id?: string, attachment_id?: string };
+        const data = (await response.json()) as { message_id?: string; attachment_id?: string };
         return {
           success: true,
           messageId: data.message_id,
@@ -156,7 +156,7 @@ export class MessengerService implements IMessengerService {
       this.validateTemplateOptions(options);
 
       const pageId = await this.extractPageId(options.accessToken);
-      
+
       let template: {
         type: string;
         payload: {
@@ -190,21 +190,21 @@ export class MessengerService implements IMessengerService {
             payload: {
               template_type: "button",
               text: options.text || "",
-              buttons: options.buttons
-            }
+              buttons: options.buttons,
+            },
           };
           break;
-        
+
         case "generic":
           template = {
             type: "template",
             payload: {
               template_type: "generic",
-              elements: options.elements
-            }
+              elements: options.elements,
+            },
           };
           break;
-        
+
         default:
           throw new MessageMeshError(
             "UNSUPPORTED_TEMPLATE_TYPE",
@@ -219,7 +219,7 @@ export class MessengerService implements IMessengerService {
         },
         messaging_type: "RESPONSE",
         message: {
-          attachment: template
+          attachment: template,
         },
         metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
       };
@@ -235,7 +235,7 @@ export class MessengerService implements IMessengerService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { message_id?: string };
+        const data = (await response.json()) as { message_id?: string };
         return {
           success: true,
           messageId: data.message_id,
@@ -265,8 +265,8 @@ export class MessengerService implements IMessengerService {
         message: {
           text: options.message,
           reply_to: {
-            mid: options.replyToMessageId
-          }
+            mid: options.replyToMessageId,
+          },
         },
         metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
       };
@@ -282,7 +282,7 @@ export class MessengerService implements IMessengerService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { message_id?: string };
+        const data = (await response.json()) as { message_id?: string };
         return {
           success: true,
           messageId: data.message_id,
@@ -310,11 +310,11 @@ export class MessengerService implements IMessengerService {
       );
 
       if (response.status === 200) {
-        const data = await response.json() as { id?: string };
+        const data = (await response.json()) as { id?: string };
         if (!data.id) {
           throw new MessageMeshError(
             "INVALID_ACCESS_TOKEN",
-            "messenger", 
+            "messenger",
             "Unable to extract page ID from access token"
           );
         }
@@ -342,32 +342,32 @@ export class MessengerService implements IMessengerService {
     // Use security utilities for enhanced validation
     SecurityUtils.validateAccessToken(options.accessToken, "messenger");
     SecurityUtils.validateUserId(options.to, "messenger");
-    
+
     const sanitizedMessage = SecurityUtils.validateMessageContent(options.message, "messenger");
-    
+
     // Messenger-specific validations
     if (sanitizedMessage.length > 2000) {
       throw new MessageMeshError(
-        "MESSAGE_TOO_LONG", 
-        "messenger", 
+        "MESSAGE_TOO_LONG",
+        "messenger",
         "Message content cannot exceed 2000 characters for Messenger"
       );
     }
-    
+
     // Validate recipient ID format (should be numeric for Facebook user ID)
     if (!/^\d+$/.test(options.to.trim())) {
       throw new MessageMeshError(
-        "INVALID_RECIPIENT", 
-        "messenger", 
+        "INVALID_RECIPIENT",
+        "messenger",
         "Recipient ID must be a valid Facebook user ID (numeric)"
       );
     }
-    
+
     // Validate and sanitize metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "messenger");
     }
-    
+
     // Update the message content with sanitized version
     options.message = sanitizedMessage;
   }
@@ -376,7 +376,7 @@ export class MessengerService implements IMessengerService {
     // Use security utilities for basic validation
     SecurityUtils.validateAccessToken(options.accessToken, "messenger");
     SecurityUtils.validateUserId(options.to, "messenger");
-    
+
     // Validate media source
     if (!options.mediaUrl && !options.mediaId) {
       throw new MessageMeshError(
@@ -385,7 +385,7 @@ export class MessengerService implements IMessengerService {
         "Either mediaUrl or mediaId must be provided"
       );
     }
-    
+
     // Validate media URL if provided
     if (options.mediaUrl) {
       try {
@@ -398,14 +398,10 @@ export class MessengerService implements IMessengerService {
           );
         }
       } catch {
-        throw new MessageMeshError(
-          "INVALID_MEDIA_URL",
-          "messenger",
-          "Invalid media URL format"
-        );
+        throw new MessageMeshError("INVALID_MEDIA_URL", "messenger", "Invalid media URL format");
       }
     }
-    
+
     // Validate media type
     const validTypes = ["image", "video", "audio", "file"];
     if (!validTypes.includes(options.type)) {
@@ -415,7 +411,7 @@ export class MessengerService implements IMessengerService {
         `Invalid media type: ${options.type}. Must be one of: ${validTypes.join(", ")}`
       );
     }
-    
+
     // Validate caption length if provided
     if (options.caption && options.caption.length > 1000) {
       throw new MessageMeshError(
@@ -424,7 +420,7 @@ export class MessengerService implements IMessengerService {
         "Caption cannot exceed 1000 characters"
       );
     }
-    
+
     // Validate metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "messenger");
@@ -435,7 +431,7 @@ export class MessengerService implements IMessengerService {
     // Use security utilities for basic validation
     SecurityUtils.validateAccessToken(options.accessToken, "messenger");
     SecurityUtils.validateUserId(options.to, "messenger");
-    
+
     // Validate template type
     const validTypes = ["generic", "button", "receipt", "airline"];
     if (!validTypes.includes(options.templateType)) {
@@ -445,7 +441,7 @@ export class MessengerService implements IMessengerService {
         `Invalid template type: ${options.templateType}. Must be one of: ${validTypes.join(", ")}`
       );
     }
-    
+
     // Type-specific validations
     switch (options.templateType) {
       case "button":
@@ -471,7 +467,7 @@ export class MessengerService implements IMessengerService {
           );
         }
         break;
-        
+
       case "generic":
         if (!options.elements || options.elements.length === 0) {
           throw new MessageMeshError(
@@ -489,7 +485,7 @@ export class MessengerService implements IMessengerService {
         }
         break;
     }
-    
+
     // Validate metadata if present
     if (options.metadata) {
       SecurityUtils.validateMetadata(options.metadata, "messenger");
@@ -502,9 +498,9 @@ export class MessengerService implements IMessengerService {
       accessToken: options.accessToken,
       to: options.to,
       message: options.message,
-      metadata: options.metadata
+      metadata: options.metadata,
     });
-    
+
     // Validate reply message ID
     if (!options.replyToMessageId || options.replyToMessageId.trim().length === 0) {
       throw new MessageMeshError(
@@ -530,7 +526,7 @@ export class MessengerService implements IMessengerService {
     // Handle HTTP-specific errors
     if (error && typeof error === "object" && "status" in error) {
       const httpError = error as { status: number; data?: unknown };
-      
+
       // Map common Messenger API error responses
       switch (httpError.status) {
         case 400:
