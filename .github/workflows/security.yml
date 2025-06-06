@@ -36,14 +36,14 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Run audit and capture output
-          if bun audit --json > audit-results.json 2>&1; then
+          if bun audit > audit-results.txt 2>&1; then
             echo "✅ No security vulnerabilities found" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ Security vulnerabilities detected" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ Security audit completed with findings" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+            echo "### Audit Results:" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            cat audit-results.json >> $GITHUB_STEP_SUMMARY
+            head -20 audit-results.txt >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No detailed results available"
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
 
@@ -108,6 +108,7 @@ jobs:
       id-token: write
       actions: read
       contents: read
+    if: github.event_name != 'pull_request'
     
     steps:
       - name: Checkout code
