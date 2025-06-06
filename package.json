@@ -21,13 +21,19 @@
     "dev": "bun --watch src/index.ts",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
     "clean": "rm -rf dist",
-    "prepublishOnly": "bun run clean && bun run build"
+    "prepublishOnly": "bun run clean && bun run build",
+    "ci": "bun run typecheck && bun run lint && bun run test && bun run build",
+    "ci:coverage": "bun run typecheck && bun run lint && bun run test:coverage && bun run build",
+    "audit": "bun audit",
+    "size-check": "bun run build && du -sh dist/*",
+    "validate": "bun run ci && bun run size-check"
   },
   "keywords": [
     "messaging",

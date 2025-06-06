@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/first-to-fly/message-mesh/discussions
+    about: Ask questions, share ideas, and discuss Message-Mesh with the community
+  - name: 📚 Documentation
+    url: https://github.com/first-to-fly/message-mesh/blob/main/docs/api-reference.md
+    about: Read the comprehensive API documentation
+  - name: 🚀 Quick Start
+    url: https://github.com/first-to-fly/message-mesh/blob/main/README.md#quick-start
+    about: Get started with Message-Mesh in minutes
+  - name: 🔒 Security Issues
+    url: https://github.com/first-to-fly/message-mesh/security/advisories/new
+    about: Report security vulnerabilities privately

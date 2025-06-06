@@ -1,0 +1,142 @@
+name: Bug Report
+description: Report a bug or issue with Message-Mesh
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out this form as completely as possible.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what happened!
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Initialize MessageMesh with...
+        2. Call method...
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: A clear and concise description of what actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Sample
+      description: Please provide a minimal code sample that reproduces the issue
+      render: typescript
+      placeholder: |
+        import { MessageMesh } from 'message-mesh';
+        
+        const mesh = new MessageMesh();
+        // Your code here...
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error Message/Stack Trace
+      description: If applicable, add the full error message and stack trace
+      render: shell
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform Affected
+      description: Which platform(s) are affected by this bug?
+      multiple: true
+      options:
+        - WhatsApp
+        - Messenger
+        - Instagram
+        - All platforms
+        - Not platform-specific
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Message-Mesh Version
+      description: What version of Message-Mesh are you using?
+      placeholder: "e.g., 1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime Environment
+      description: What runtime are you using?
+      options:
+        - Bun
+        - Node.js
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: runtime-version
+    attributes:
+      label: Runtime Version
+      description: What version of your runtime are you using?
+      placeholder: "e.g., Bun 1.2.12 or Node.js 20.10.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here (screenshots, logs, etc.)
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided a minimal code sample that reproduces the issue
+          required: true
+        - label: I have included all relevant error messages and stack traces
+          required: true
