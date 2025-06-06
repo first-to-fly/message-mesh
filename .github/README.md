@@ -8,11 +8,7 @@ This directory contains GitHub Actions workflows and automation for the Message-
 
 #### 1. **CI Pipeline** (`ci.yml`)
 **Triggers:** Push to `main`/`develop`, Pull Requests
-- **Test & Lint**: Runs on multiple Bun versions
-- **Security Scan**: CodeQL analysis and vulnerability scanning
-- **Bundle Analysis**: Checks bundle size limits (100KB max)
-- **Node.js Compatibility**: Tests on Node.js 18, 20, 21
-- **Quality Gates**: Coverage and quality checks
+- **Test & Lint**: Runs with Bun
 
 #### 2. **Release Pipeline** (`release.yml`)
 **Triggers:** Git tags (`v*`), Manual workflow dispatch
@@ -22,13 +18,6 @@ This directory contains GitHub Actions workflows and automation for the Message-
 - **GitHub Release**: Creates GitHub release with changelog
 - **Notifications**: Success/failure notifications
 
-#### 3. **Security & Dependencies** (`security.yml`)
-**Triggers:** Daily at 2 AM UTC, Dependency changes, Manual
-- **Dependency Audit**: Security vulnerability scanning
-- **License Check**: Ensures license compliance
-- **OpenSSF Scorecard**: Security best practices analysis
-- **Vulnerability Scan**: Trivy filesystem scanning
-- **Auto Updates**: Creates PRs for dependency updates
 
 #### 4. **Code Quality** (`quality.yml`)
 **Triggers:** Push to `main`/`develop`, Pull Requests, Weekly
