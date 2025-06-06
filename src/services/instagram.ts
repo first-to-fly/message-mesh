@@ -1,5 +1,10 @@
 import type { IInstagramService } from "../interfaces.js";
-import type { SendMessageResponse, InstagramMessageOptions } from "../types.js";
+import type { 
+  SendMessageResponse, 
+  InstagramMessageOptions,
+  InstagramMediaOptions,
+  InstagramReplyOptions
+} from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
 import { SecurityUtils } from "../security.js";
@@ -61,6 +66,128 @@ export class InstagramService implements IInstagramService {
         "SEND_FAILED",
         "instagram",
         `Failed to send message: ${response.status}`
+      );
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async sendMedia(options: InstagramMediaOptions): Promise<SendMessageResponse> {
+    try {
+      this.validateMediaOptions(options);
+
+      const instagramAccountId = await this.extractInstagramAccountId(options.accessToken);
+      
+      // Build attachment object based on media type
+      const attachment: {
+        type: string;
+        payload: {
+          url?: string;
+          is_reusable?: boolean;
+          attachment_id?: string;
+        };
+      } = {
+        type: options.type,
+        payload: {}
+      };
+
+      // Use media URL or media ID
+      if (options.mediaUrl) {
+        attachment.payload.url = options.mediaUrl;
+        attachment.payload.is_reusable = true;
+      } else if (options.mediaId) {
+        attachment.payload.attachment_id = options.mediaId;
+      }
+
+      const message: {
+        attachment: typeof attachment;
+        text?: string;
+      } = {
+        attachment
+      };
+
+      // Add caption for images and videos
+      if (options.caption && (options.type === "image" || options.type === "video")) {
+        message.text = options.caption;
+      }
+
+      const payload = {
+        recipient: {
+          id: options.to,
+        },
+        message,
+        metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
+      };
+
+      const response = await this.httpClient.post(
+        `${InstagramService.BASE_URL}/${instagramAccountId}/messages`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "instagram"
+      );
+
+      if (response.status === 200) {
+        const data = await response.json() as { message_id?: string, attachment_id?: string };
+        return {
+          success: true,
+          messageId: data.message_id,
+          attachmentId: data.attachment_id,
+        };
+      }
+
+      throw new MessageMeshError(
+        "SEND_FAILED",
+        "instagram",
+        `Failed to send media: ${response.status}`
+      );
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async replyMessage(options: InstagramReplyOptions): Promise<SendMessageResponse> {
+    try {
+      this.validateReplyOptions(options);
+
+      const instagramAccountId = await this.extractInstagramAccountId(options.accessToken);
+      const payload = {
+        recipient: {
+          id: options.to,
+        },
+        message: {
+          text: options.message,
+          reply_to: {
+            mid: options.replyToMessageId
+          }
+        },
+        metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
+      };
+
+      const response = await this.httpClient.post(
+        `${InstagramService.BASE_URL}/${instagramAccountId}/messages`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "instagram"
+      );
+
+      if (response.status === 200) {
+        const data = await response.json() as { message_id?: string };
+        return {
+          success: true,
+          messageId: data.message_id,
+        };
+      }
+
+      throw new MessageMeshError(
+        "SEND_FAILED",
+        "instagram",
+        `Failed to send reply: ${response.status}`
       );
     } catch (error) {
       return this.handleError(error);
@@ -140,6 +267,90 @@ export class InstagramService implements IInstagramService {
     options.message = sanitizedMessage;
   }
 
+  private validateMediaOptions(options: InstagramMediaOptions): void {
+    // Use security utilities for basic validation
+    SecurityUtils.validateAccessToken(options.accessToken, "instagram");
+    SecurityUtils.validateUserId(options.to, "instagram");
+    
+    // Validate media source
+    if (!options.mediaUrl && !options.mediaId) {
+      throw new MessageMeshError(
+        "MISSING_MEDIA_SOURCE",
+        "instagram",
+        "Either mediaUrl or mediaId must be provided"
+      );
+    }
+    
+    // Validate media URL if provided
+    if (options.mediaUrl) {
+      try {
+        new URL(options.mediaUrl);
+        if (!options.mediaUrl.startsWith("https://")) {
+          throw new MessageMeshError(
+            "INVALID_MEDIA_URL",
+            "instagram",
+            "Media URL must use HTTPS protocol"
+          );
+        }
+      } catch {
+        throw new MessageMeshError(
+          "INVALID_MEDIA_URL",
+          "instagram",
+          "Invalid media URL format"
+        );
+      }
+    }
+    
+    // Validate media type
+    const validTypes = ["image", "video", "audio"];
+    if (!validTypes.includes(options.type)) {
+      throw new MessageMeshError(
+        "INVALID_MEDIA_TYPE",
+        "instagram",
+        `Invalid media type: ${options.type}. Must be one of: ${validTypes.join(", ")}`
+      );
+    }
+    
+    // Instagram specific: Audio is limited
+    if (options.type === "audio") {
+      // Note: Instagram has limited support for audio messages
+      console.warn("Instagram has limited support for audio messages. Consider using video instead.");
+    }
+    
+    // Validate caption length if provided
+    if (options.caption && options.caption.length > 2200) {
+      throw new MessageMeshError(
+        "CAPTION_TOO_LONG",
+        "instagram",
+        "Caption cannot exceed 2200 characters"
+      );
+    }
+    
+    // Validate metadata if present
+    if (options.metadata) {
+      SecurityUtils.validateMetadata(options.metadata, "instagram");
+    }
+  }
+
+  private validateReplyOptions(options: InstagramReplyOptions): void {
+    // Reuse message validation
+    this.validateMessageOptions({
+      accessToken: options.accessToken,
+      to: options.to,
+      message: options.message,
+      metadata: options.metadata
+    });
+    
+    // Validate reply message ID
+    if (!options.replyToMessageId || options.replyToMessageId.trim().length === 0) {
+      throw new MessageMeshError(
+        "MISSING_REPLY_MESSAGE_ID",
+        "instagram",
+        "Reply message ID is required"
+      );
+    }
+  }
+
   private handleError(error: unknown): SendMessageResponse {
     if (error instanceof MessageMeshError) {
       return {
@@ -154,7 +365,7 @@ export class InstagramService implements IInstagramService {
 
     // Handle HTTP-specific errors
     if (error && typeof error === "object" && "status" in error) {
-      const httpError = error as { status: number; data?: any };
+      const httpError = error as { status: number; data?: unknown };
       
       // Map common Instagram API error responses
       switch (httpError.status) {

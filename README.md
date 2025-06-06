@@ -69,12 +69,14 @@ if (result.success) {
 
 ### Facebook Messenger ✅
 - ✅ Text messages
-- 🚧 Rich media (coming soon)
-- 🚧 Templates (coming soon)
+- ✅ Media messages (image, video, audio, file)
+- ✅ Template messages (button, generic)
+- ✅ Reply to messages
 
 ### Instagram Messaging ✅
 - ✅ Text messages
-- 🚧 Rich media (coming soon)
+- ✅ Media messages (image, video, audio)
+- ✅ Reply to messages
 
 ## 📚 Platform Usage
 
@@ -139,6 +141,35 @@ await messageMesh.messenger.sendMessage({
   message: "Hello from Messenger!",
   metadata: { source: "crm" }
 });
+
+// Send media
+await messageMesh.messenger.sendMedia({
+  accessToken: "token",
+  to: "user-id",
+  type: "image",
+  mediaUrl: "https://example.com/image.jpg",
+  caption: "Check this out!"
+});
+
+// Send template
+await messageMesh.messenger.sendTemplate({
+  accessToken: "token",
+  to: "user-id",
+  templateType: "button",
+  text: "What would you like to do?",
+  buttons: [
+    { type: "web_url", title: "Visit Website", url: "https://example.com" },
+    { type: "postback", title: "Get Started", payload: "START" }
+  ]
+});
+
+// Reply to message
+await messageMesh.messenger.replyMessage({
+  accessToken: "token",
+  to: "user-id",
+  message: "Thanks for your message!",
+  replyToMessageId: "original_message_id"
+});
 ```
 
 ### Instagram Messaging
@@ -150,6 +181,23 @@ await messageMesh.instagram.sendMessage({
   to: "instagram-scoped-user-id",
   message: "Hello from Instagram!",
   metadata: { campaign: "welcome" }
+});
+
+// Send media
+await messageMesh.instagram.sendMedia({
+  accessToken: "token",
+  to: "igsid",
+  type: "image",
+  mediaUrl: "https://example.com/photo.jpg",
+  caption: "Beautiful photo! 📸"
+});
+
+// Reply to message
+await messageMesh.instagram.replyMessage({
+  accessToken: "token",
+  to: "igsid",
+  message: "Thanks for your comment!",
+  replyToMessageId: "original_message_id"
 });
 ```
 
@@ -437,6 +485,14 @@ This project follows standard contribution guidelines:
 3. Make your changes with tests
 4. Ensure all tests pass
 5. Submit a pull request
+
+## 📚 Documentation
+
+- [API Reference](./docs/api-reference.md) - Complete API documentation
+- [Getting Started](./docs/getting-started.md) - Quick start guide
+- [Configuration Guide](./docs/configuration.md) - Configuration options
+- [WhatsApp Integration](./docs/platforms/whatsapp.md) - WhatsApp-specific features
+- [Messenger Integration](./docs/platforms/messenger.md) - Messenger-specific features
 
 ## 📞 Support
 

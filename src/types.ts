@@ -6,6 +6,7 @@ export interface MessageMeshConfig {
 export interface SendMessageResponse {
   success: boolean;
   messageId?: string;
+  attachmentId?: string;
   error?: {
     code: string;
     message: string;
@@ -99,10 +100,73 @@ export interface MessengerMessageOptions {
   metadata?: Record<string, any>;
 }
 
+export interface MessengerMediaOptions {
+  accessToken: string;
+  to: string;
+  type: "image" | "video" | "audio" | "file";
+  mediaUrl?: string;
+  mediaId?: string;
+  caption?: string;
+  filename?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface MessengerTemplateOptions {
+  accessToken: string;
+  to: string;
+  templateType: "generic" | "button" | "receipt" | "airline";
+  elements?: Array<{
+    title: string;
+    subtitle?: string;
+    imageUrl?: string;
+    buttons?: Array<{
+      type: "web_url" | "postback";
+      title: string;
+      url?: string;
+      payload?: string;
+    }>;
+  }>;
+  text?: string;
+  buttons?: Array<{
+    type: "web_url" | "postback" | "call";
+    title: string;
+    url?: string;
+    payload?: string;
+    phoneNumber?: string;
+  }>;
+  metadata?: Record<string, any>;
+}
+
+export interface MessengerReplyOptions {
+  accessToken: string;
+  to: string;
+  message: string;
+  replyToMessageId: string;
+  metadata?: Record<string, any>;
+}
+
 export interface InstagramMessageOptions {
   accessToken: string;
   to: string;
   message: string;
+  metadata?: Record<string, any>;
+}
+
+export interface InstagramMediaOptions {
+  accessToken: string;
+  to: string;
+  type: "image" | "video" | "audio";
+  mediaUrl?: string;
+  mediaId?: string;
+  caption?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface InstagramReplyOptions {
+  accessToken: string;
+  to: string;
+  message: string;
+  replyToMessageId: string;
   metadata?: Record<string, any>;
 }
 
