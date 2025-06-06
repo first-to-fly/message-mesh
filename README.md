@@ -7,12 +7,11 @@ A unified messaging SDK for Node.js/Bun applications that provides a simple, con
 [![Bun](https://img.shields.io/badge/Bun-1.0+-orange.svg)](https://bun.sh/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen.svg)](#testing)
-[![Bundle Size](https://img.shields.io/badge/bundle-50.57%20KB-blue.svg)](#performance--bundle-size)
 
 ## ✨ Features
 
 - 🚀 **Bun-first design** with Node.js compatibility
-- 📱 **Multi-platform support** - WhatsApp, Messenger, Instagram
+- 📱 **Complete multi-platform support** - WhatsApp, Messenger, Instagram
 - 🔒 **Type-safe** with full TypeScript support
 - ⚡ **High performance** with built-in caching and optimization
 - 🛠️ **Comprehensive messaging features** across all platforms
@@ -22,6 +21,7 @@ A unified messaging SDK for Node.js/Bun applications that provides a simple, con
 - 📊 **Production monitoring** with health checks and metrics
 - 🪝 **Webhook utilities** with signature verification
 - 🧪 **Thoroughly tested** with 41+ comprehensive tests
+- 🌐 **Universal messaging** - send to multiple platforms simultaneously
 
 ## 📦 Installation
 
@@ -128,6 +128,13 @@ await messageMesh.whatsapp.sendMedia({
   mediaType: "image",
   mediaUrl: "https://example.com/image.jpg",
   caption: "Check out this image!"
+});
+
+// Send emoji
+await messageMesh.whatsapp.sendEmoji({
+  accessToken: "token",
+  to: "+1234567890",
+  emoji: "🎉"
 });
 ```
 
@@ -460,11 +467,11 @@ src/
 
 ## 📊 Performance & Bundle Size
 
-- **Bundle Size**: 50.57 KB (optimized)
 - **Runtime**: Zero external dependencies
 - **Memory Usage**: < 50MB typical usage
 - **Response Cache**: Built-in with TTL
 - **Rate Limiting**: Automatic retry with backoff
+- **Test Coverage**: 41 tests, 108 assertions
 
 ## 🔧 Requirements
 
@@ -478,13 +485,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
-This project follows standard contribution guidelines:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Ensure all tests pass
-5. Submit a pull request
+This is an internal project for CRM applications. Please contact the Internal CRM Team for contribution guidelines.
 
 ## 📚 Documentation
 
