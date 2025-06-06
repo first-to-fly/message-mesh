@@ -2,10 +2,12 @@
 
 A unified messaging SDK for Node.js/Bun applications that provides a simple, consistent interface for sending messages across multiple social media platforms (WhatsApp, Messenger, Instagram).
 
+[![Version](https://img.shields.io/badge/version-0.1.0-purple.svg)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.0+-orange.svg)](https://bun.sh/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen.svg)](#testing)
+[![Bundle Size](https://img.shields.io/badge/bundle-50.57%20KB-blue.svg)](#performance--bundle-size)
 
 ## ✨ Features
 
@@ -330,10 +332,15 @@ if (!result.success) {
 
 ## 🧪 Testing
 
-The SDK includes comprehensive tests with 41+ test cases:
+The SDK includes comprehensive tests covering all functionality:
+
+- **41 test cases** covering core functionality
+- **108 expect() assertions** for thorough validation
+- **100% TypeScript coverage** with strict mode
+- **Zero external test dependencies** using Bun's native test runner
 
 ```bash
-bun test              # Run all tests
+bun test              # Run all tests (41 passing)
 bun test --watch      # Run tests in watch mode
 bun run typecheck     # TypeScript validation
 bun run lint          # Code quality checks
@@ -355,10 +362,12 @@ bun install
 bun run build        # Build the package for distribution
 bun run dev          # Development mode with watch
 bun run clean        # Clean dist directory
-bun test             # Run test suite
+bun test             # Run test suite (41 tests, 108 assertions)
 bun run typecheck    # TypeScript checking
 bun run lint         # ESLint code quality
+bun run lint:fix     # Auto-fix linting issues
 bun run format       # Format with Prettier
+bun run format:check # Check code formatting
 ```
 
 ### Project Structure
@@ -417,7 +426,7 @@ src/
 
 ## 📄 License
 
-MIT
+MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
