@@ -18,6 +18,26 @@ import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
 import { SecurityUtils } from "../security.js";
 
+interface MessengerApiResponse {
+  id?: string;
+  data?: any[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    message: string;
+    type: string;
+    code: number;
+    error_subcode?: number;
+    fbtrace_id?: string;
+  };
+}
+
 export class MessengerService implements IMessengerService {
   private static readonly BASE_URL = "https://graph.facebook.com/v23.0";
 
@@ -331,7 +351,7 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json();
+      const result = await response.json() as MessengerApiResponse;
 
       if (result.id) {
         return {
@@ -364,14 +384,16 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json();
+      const result = await response.json() as MessengerApiResponse;
 
-      if (result.success !== false) {
-        return {
-          success: true,
-          templateId: options.templateId,
-        };
+      if (result.error) {
+        return this.handleMessengerTemplateError(result);
       }
+
+      return {
+        success: true,
+        templateId: options.templateId,
+      };
 
       return this.handleMessengerTemplateError(result);
     } catch (error) {
@@ -391,14 +413,16 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json();
+      const result = await response.json() as MessengerApiResponse;
 
-      if (result.success !== false) {
-        return {
-          success: true,
-          templateId: options.templateId,
-        };
+      if (result.error) {
+        return this.handleMessengerTemplateError(result);
       }
+
+      return {
+        success: true,
+        templateId: options.templateId,
+      };
 
       return this.handleMessengerTemplateError(result);
     } catch (error) {
@@ -425,7 +449,7 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json();
+      const result = await response.json() as MessengerApiResponse;
 
       if (result.id) {
         return {
@@ -466,7 +490,7 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json();
+      const result = await response.json() as MessengerApiResponse;
 
       if (result.data) {
         return {

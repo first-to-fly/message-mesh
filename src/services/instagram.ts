@@ -17,6 +17,26 @@ import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
 import { SecurityUtils } from "../security.js";
 
+interface InstagramApiResponse {
+  id?: string;
+  data?: any[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    message: string;
+    type: string;
+    code: number;
+    error_subcode?: number;
+    fbtrace_id?: string;
+  };
+}
+
 export class InstagramService implements IInstagramService {
   private static readonly BASE_URL = "https://graph.instagram.com/v23.0";
 
@@ -226,7 +246,7 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json();
+      const result = await response.json() as InstagramApiResponse;
 
       if (result.id) {
         return {
@@ -259,14 +279,16 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json();
+      const result = await response.json() as InstagramApiResponse;
 
-      if (result.success !== false) {
-        return {
-          success: true,
-          templateId: options.templateId,
-        };
+      if (result.error) {
+        return this.handleInstagramTemplateError(result);
       }
+
+      return {
+        success: true,
+        templateId: options.templateId,
+      };
 
       return this.handleInstagramTemplateError(result);
     } catch (error) {
@@ -286,14 +308,16 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json();
+      const result = await response.json() as InstagramApiResponse;
 
-      if (result.success !== false) {
-        return {
-          success: true,
-          templateId: options.templateId,
-        };
+      if (result.error) {
+        return this.handleInstagramTemplateError(result);
       }
+
+      return {
+        success: true,
+        templateId: options.templateId,
+      };
 
       return this.handleInstagramTemplateError(result);
     } catch (error) {
@@ -320,7 +344,7 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json();
+      const result = await response.json() as InstagramApiResponse;
 
       if (result.id) {
         return {
@@ -361,7 +385,7 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json();
+      const result = await response.json() as InstagramApiResponse;
 
       if (result.data) {
         return {

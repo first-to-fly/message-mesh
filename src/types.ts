@@ -454,6 +454,67 @@ export interface InstagramTemplateListResponse {
   };
 }
 
+// API Response Types
+export interface WhatsAppAPIResponse {
+  id?: string;
+  data?: any[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    message: string;
+    type: string;
+    code: number;
+    error_subcode?: number;
+    fbtrace_id?: string;
+  };
+}
+
+export interface MessengerAPIResponse {
+  id?: string;
+  data?: any[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    message: string;
+    type: string;
+    code: number;
+    error_subcode?: number;
+    fbtrace_id?: string;
+  };
+}
+
+export interface InstagramAPIResponse {
+  id?: string;
+  data?: any[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    message: string;
+    type: string;
+    code: number;
+    error_subcode?: number;
+    fbtrace_id?: string;
+  };
+}
+
 export class MessageMeshError extends Error {
   constructor(
     public code: string,

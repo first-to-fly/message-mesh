@@ -22,10 +22,22 @@ import { SecurityUtils } from "../security.js";
 
 interface WhatsAppApiResponse {
   messages?: Array<{ id: string }>;
+  id?: string;
+  data?: any[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
   error?: {
     message: string;
     type: string;
     code: number;
+    error_subcode?: number;
+    fbtrace_id?: string;
   };
 }
 
@@ -446,7 +458,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json();
+      const result = await response.json() as WhatsAppApiResponse;
 
       if (result.id) {
         return {
@@ -479,16 +491,16 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json();
+      const result = await response.json() as WhatsAppApiResponse;
 
-      if (result.success !== false) {
-        return {
-          success: true,
-          templateId: options.templateId,
-        };
+      if (result.error) {
+        return this.handleTemplateError(result);
       }
 
-      return this.handleTemplateError(result);
+      return {
+        success: true,
+        templateId: options.templateId,
+      };
     } catch (error) {
       return this.handleTemplateError(error);
     }
@@ -506,16 +518,16 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json();
+      const result = await response.json() as WhatsAppApiResponse;
 
-      if (result.success !== false) {
-        return {
-          success: true,
-          templateId: options.templateId,
-        };
+      if (result.error) {
+        return this.handleTemplateError(result);
       }
 
-      return this.handleTemplateError(result);
+      return {
+        success: true,
+        templateId: options.templateId,
+      };
     } catch (error) {
       return this.handleTemplateError(error);
     }
@@ -540,7 +552,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json();
+      const result = await response.json() as WhatsAppApiResponse;
 
       if (result.id) {
         return {
@@ -581,7 +593,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json();
+      const result = await response.json() as WhatsAppApiResponse;
 
       if (result.data) {
         return {
