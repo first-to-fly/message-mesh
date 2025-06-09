@@ -25,12 +25,20 @@ A unified messaging SDK for Node.js/Bun applications that provides a simple, con
 
 ## 📦 Installation
 
+Install directly from GitHub using SSH:
+
 ```bash
-bun add message-mesh
+bun add git+ssh://git@github.com/your-org/message-mesh.git
 # or
-npm install message-mesh
+npm install git+ssh://git@github.com/your-org/message-mesh.git
 # or
-pnpm add message-mesh
+pnpm add git+ssh://git@github.com/your-org/message-mesh.git
+```
+
+For specific versions or branches:
+```bash
+bun add git+ssh://git@github.com/your-org/message-mesh.git#v1.0.0
+bun add git+ssh://git@github.com/your-org/message-mesh.git#main
 ```
 
 ## 🚀 Quick Start
