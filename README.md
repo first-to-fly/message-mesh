@@ -171,17 +171,17 @@ const createResult = await messageMesh.whatsapp.createTemplate({
     {
       type: "HEADER",
       format: "TEXT",
-      text: "Welcome to our service!"
+      text: "Welcome to our service!",
     },
     {
       type: "BODY",
-      text: "Hello {{1}}, thank you for joining us!"
+      text: "Hello {{1}}, thank you for joining us!",
     },
     {
       type: "FOOTER",
-      text: "Best regards, Team"
-    }
-  ]
+      text: "Best regards, Team",
+    },
+  ],
 });
 
 if (createResult.success) {
@@ -191,13 +191,13 @@ if (createResult.success) {
 // Check template status
 const statusResult = await messageMesh.whatsapp.getTemplate({
   accessToken: "token",
-  templateId: "template_id"
+  templateId: "template_id",
 });
 
 if (statusResult.success && statusResult.template) {
   console.log("Template status:", statusResult.template.status); // PENDING, APPROVED, REJECTED
   console.log("Quality score:", statusResult.template.qualityScore?.score);
-  
+
   if (statusResult.template.status === "REJECTED") {
     console.log("Rejection reason:", statusResult.template.rejectedReason);
   }
@@ -208,12 +208,12 @@ const listResult = await messageMesh.whatsapp.listTemplates({
   accessToken: "token",
   status: "APPROVED", // Only get approved templates
   category: "MARKETING",
-  limit: 50
+  limit: 50,
 });
 
 if (listResult.success) {
   console.log("Found templates:", listResult.templates?.length);
-  listResult.templates?.forEach(template => {
+  listResult.templates?.forEach((template) => {
     console.log(`- ${template.name}: ${template.status}`);
   });
 }
@@ -222,14 +222,14 @@ if (listResult.success) {
 const updateResult = await messageMesh.whatsapp.updateTemplate({
   accessToken: "token",
   templateId: "template_id",
-  category: "UTILITY" // Change category if needed
+  category: "UTILITY", // Change category if needed
 });
 
 // Delete template
 const deleteResult = await messageMesh.whatsapp.deleteTemplate({
   accessToken: "token",
   templateId: "template_id",
-  name: "welcome_message"
+  name: "welcome_message",
 });
 ```
 
@@ -288,11 +288,11 @@ const createResult = await messageMesh.messenger.createTemplate({
     {
       type: "HEADER",
       format: "TEXT",
-      text: "Order Update"
+      text: "Order Update",
     },
     {
       type: "BODY",
-      text: "Your order {{1}} has been shipped and will arrive by {{2}}."
+      text: "Your order {{1}} has been shipped and will arrive by {{2}}.",
     },
     {
       type: "BUTTONS",
@@ -300,21 +300,21 @@ const createResult = await messageMesh.messenger.createTemplate({
         {
           type: "URL",
           text: "Track Package",
-          url: "https://tracking.example.com/{{3}}"
+          url: "https://tracking.example.com/{{3}}",
         },
         {
           type: "QUICK_REPLY",
-          text: "Contact Support"
-        }
-      ]
-    }
-  ]
+          text: "Contact Support",
+        },
+      ],
+    },
+  ],
 });
 
 // Check template status
 const statusResult = await messageMesh.messenger.getTemplate({
   accessToken: "page-access-token",
-  templateId: "template_id"
+  templateId: "template_id",
 });
 
 if (statusResult.success && statusResult.template) {
@@ -326,21 +326,21 @@ if (statusResult.success && statusResult.template) {
 const listResult = await messageMesh.messenger.listTemplates({
   accessToken: "page-access-token",
   status: "APPROVED",
-  category: "SHIPPING_UPDATE"
+  category: "SHIPPING_UPDATE",
 });
 
 // Update template
 await messageMesh.messenger.updateTemplate({
   accessToken: "page-access-token",
   templateId: "template_id",
-  category: "ACCOUNT_UPDATE"
+  category: "ACCOUNT_UPDATE",
 });
 
 // Delete template
 await messageMesh.messenger.deleteTemplate({
   accessToken: "page-access-token",
   templateId: "template_id",
-  name: "order_update"
+  name: "order_update",
 });
 ```
 
@@ -387,32 +387,32 @@ const createResult = await messageMesh.instagram.createTemplate({
     {
       type: "HEADER",
       format: "TEXT",
-      text: "Appointment Reminder"
+      text: "Appointment Reminder",
     },
     {
       type: "BODY",
-      text: "Hi {{1}}! This is a reminder about your appointment on {{2}} at {{3}}."
+      text: "Hi {{1}}! This is a reminder about your appointment on {{2}} at {{3}}.",
     },
     {
       type: "BUTTONS",
       buttons: [
         {
           type: "QUICK_REPLY",
-          text: "Confirm"
+          text: "Confirm",
         },
         {
-          type: "QUICK_REPLY", 
-          text: "Reschedule"
-        }
-      ]
-    }
-  ]
+          type: "QUICK_REPLY",
+          text: "Reschedule",
+        },
+      ],
+    },
+  ],
 });
 
 // Check template approval status
 const statusResult = await messageMesh.instagram.getTemplate({
   accessToken: "instagram-access-token",
-  templateId: "template_id"
+  templateId: "template_id",
 });
 
 if (statusResult.success && statusResult.template) {
@@ -426,11 +426,11 @@ if (statusResult.success && statusResult.template) {
 const listResult = await messageMesh.instagram.listTemplates({
   accessToken: "instagram-access-token",
   status: "APPROVED",
-  limit: 25
+  limit: 25,
 });
 
 if (listResult.success) {
-  listResult.templates?.forEach(template => {
+  listResult.templates?.forEach((template) => {
     console.log(`${template.name}: ${template.status}`);
   });
 }
@@ -439,14 +439,14 @@ if (listResult.success) {
 await messageMesh.instagram.updateTemplate({
   accessToken: "instagram-access-token",
   templateId: "template_id",
-  category: "RESERVATION_UPDATE"
+  category: "RESERVATION_UPDATE",
 });
 
 // Delete template
 await messageMesh.instagram.deleteTemplate({
   accessToken: "instagram-access-token",
   templateId: "template_id",
-  name: "appointment_reminder"
+  name: "appointment_reminder",
 });
 ```
 
