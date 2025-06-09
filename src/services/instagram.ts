@@ -4,6 +4,14 @@ import type {
   InstagramMessageOptions,
   InstagramMediaOptions,
   InstagramReplyOptions,
+  InstagramTemplateCreateOptions,
+  InstagramTemplateUpdateOptions,
+  InstagramTemplateDeleteOptions,
+  InstagramTemplateListOptions,
+  InstagramTemplateStatusOptions,
+  InstagramTemplateResponse,
+  InstagramTemplateListResponse,
+  InstagramTemplate,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -194,6 +202,181 @@ export class InstagramService implements IInstagramService {
     }
   }
 
+  // Template Management Methods
+
+  async createTemplate(options: InstagramTemplateCreateOptions): Promise<InstagramTemplateResponse> {
+    try {
+      this.validateInstagramTemplateCreateOptions(options);
+
+      const payload = {
+        name: options.name,
+        category: options.category,
+        language: options.language || "en_US",
+        components: options.components,
+      };
+
+      const accountId = await this.extractInstagramAccountId(options.accessToken);
+      const response = await this.httpClient.post(
+        `${InstagramService.BASE_URL}/${accountId}/message_templates`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "instagram"
+      );
+
+      const result = await response.json();
+
+      if (result.id) {
+        return {
+          success: true,
+          templateId: result.id,
+        };
+      }
+
+      return this.handleInstagramTemplateError(result);
+    } catch (error) {
+      return this.handleInstagramTemplateError(error);
+    }
+  }
+
+  async updateTemplate(options: InstagramTemplateUpdateOptions): Promise<InstagramTemplateResponse> {
+    try {
+      this.validateInstagramTemplateUpdateOptions(options);
+
+      const payload: any = {};
+      if (options.components) payload.components = options.components;
+      if (options.category) payload.category = options.category;
+
+      const response = await this.httpClient.post(
+        `${InstagramService.BASE_URL}/${options.templateId}`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "instagram"
+      );
+
+      const result = await response.json();
+
+      if (result.success !== false) {
+        return {
+          success: true,
+          templateId: options.templateId,
+        };
+      }
+
+      return this.handleInstagramTemplateError(result);
+    } catch (error) {
+      return this.handleInstagramTemplateError(error);
+    }
+  }
+
+  async deleteTemplate(options: InstagramTemplateDeleteOptions): Promise<InstagramTemplateResponse> {
+    try {
+      this.validateInstagramTemplateDeleteOptions(options);
+
+      const response = await this.httpClient.delete(
+        `${InstagramService.BASE_URL}/${options.templateId}?name=${encodeURIComponent(options.name)}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "instagram"
+      );
+
+      const result = await response.json();
+
+      if (result.success !== false) {
+        return {
+          success: true,
+          templateId: options.templateId,
+        };
+      }
+
+      return this.handleInstagramTemplateError(result);
+    } catch (error) {
+      return this.handleInstagramTemplateError(error);
+    }
+  }
+
+  async getTemplate(options: InstagramTemplateStatusOptions): Promise<InstagramTemplateResponse> {
+    try {
+      this.validateInstagramTemplateStatusOptions(options);
+
+      const params = new URLSearchParams();
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+      }
+
+      const response = await this.httpClient.get(
+        `${InstagramService.BASE_URL}/${options.templateId}?${params.toString()}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "instagram"
+      );
+
+      const result = await response.json();
+
+      if (result.id) {
+        return {
+          success: true,
+          template: this.formatInstagramTemplate(result),
+        };
+      }
+
+      return this.handleInstagramTemplateError(result);
+    } catch (error) {
+      return this.handleInstagramTemplateError(error);
+    }
+  }
+
+  async listTemplates(options: InstagramTemplateListOptions): Promise<InstagramTemplateListResponse> {
+    try {
+      this.validateInstagramTemplateListOptions(options);
+
+      const params = new URLSearchParams();
+      
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+      }
+      
+      if (options.limit) params.append("limit", options.limit.toString());
+      if (options.offset) params.append("offset", options.offset);
+      if (options.status) params.append("status", options.status);
+      if (options.category) params.append("category", options.category);
+
+      const accountId = await this.extractInstagramAccountId(options.accessToken);
+      const response = await this.httpClient.get(
+        `${InstagramService.BASE_URL}/${accountId}/message_templates?${params.toString()}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "instagram"
+      );
+
+      const result = await response.json();
+
+      if (result.data) {
+        return {
+          success: true,
+          templates: result.data.map((template: any) => this.formatInstagramTemplate(template)),
+          paging: result.paging,
+        };
+      }
+
+      return this.handleInstagramTemplateListError(result);
+    } catch (error) {
+      return this.handleInstagramTemplateListError(error);
+    }
+  }
+
   private async extractInstagramAccountId(accessToken: string): Promise<string> {
     try {
       const response = await this.httpClient.get(
@@ -347,6 +530,120 @@ export class InstagramService implements IInstagramService {
         "Reply message ID is required"
       );
     }
+  }
+
+  private validateInstagramTemplateCreateOptions(options: InstagramTemplateCreateOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "instagram", "Access token is required");
+    }
+    if (!options.name) {
+      throw new MessageMeshError("INVALID_TEMPLATE_NAME", "instagram", "Template name is required");
+    }
+    if (!options.category) {
+      throw new MessageMeshError("INVALID_TEMPLATE_CATEGORY", "instagram", "Template category is required");
+    }
+    if (!options.components || options.components.length === 0) {
+      throw new MessageMeshError("INVALID_TEMPLATE_COMPONENTS", "instagram", "Template components are required");
+    }
+  }
+
+  private validateInstagramTemplateUpdateOptions(options: InstagramTemplateUpdateOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "instagram", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "instagram", "Template ID is required");
+    }
+  }
+
+  private validateInstagramTemplateDeleteOptions(options: InstagramTemplateDeleteOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "instagram", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "instagram", "Template ID is required");
+    }
+    if (!options.name) {
+      throw new MessageMeshError("INVALID_TEMPLATE_NAME", "instagram", "Template name is required");
+    }
+  }
+
+  private validateInstagramTemplateStatusOptions(options: InstagramTemplateStatusOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "instagram", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "instagram", "Template ID is required");
+    }
+  }
+
+  private validateInstagramTemplateListOptions(options: InstagramTemplateListOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "instagram", "Access token is required");
+    }
+  }
+
+  private formatInstagramTemplate(apiTemplate: any): InstagramTemplate {
+    return {
+      id: apiTemplate.id,
+      name: apiTemplate.name,
+      status: apiTemplate.status,
+      category: apiTemplate.category,
+      language: apiTemplate.language,
+      components: apiTemplate.components,
+      createdTime: apiTemplate.created_time,
+      modifiedTime: apiTemplate.modified_time,
+      qualityScore: apiTemplate.quality_score ? {
+        score: apiTemplate.quality_score.score,
+        date: apiTemplate.quality_score.date,
+      } : undefined,
+      rejectedReason: apiTemplate.rejected_reason,
+      disabledDate: apiTemplate.disabled_date,
+    };
+  }
+
+  private handleInstagramTemplateError(error: unknown): InstagramTemplateResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "INSTAGRAM_TEMPLATE_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "instagram",
+      },
+    };
+  }
+
+  private handleInstagramTemplateListError(error: unknown): InstagramTemplateListResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "INSTAGRAM_TEMPLATE_LIST_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "instagram",
+      },
+    };
   }
 
   private handleError(error: unknown): SendMessageResponse {

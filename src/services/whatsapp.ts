@@ -7,6 +7,14 @@ import type {
   WhatsAppReactionOptions,
   WhatsAppMediaOptions,
   WhatsAppEmojiOptions,
+  TemplateCreateOptions,
+  TemplateUpdateOptions,
+  TemplateDeleteOptions,
+  TemplateListOptions,
+  TemplateStatusOptions,
+  TemplateResponse,
+  TemplateListResponse,
+  Template,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -413,11 +421,311 @@ export class WhatsAppService implements IWhatsAppService {
     }
   }
 
+  // Template Management Methods
+
+  async createTemplate(options: TemplateCreateOptions): Promise<TemplateResponse> {
+    try {
+      this.validateTemplateCreateOptions(options);
+
+      const payload = {
+        name: options.name,
+        category: options.category,
+        language: options.language,
+        components: options.components,
+        ...(options.allowCategoryChange && { allow_category_change: options.allowCategoryChange }),
+      };
+
+      const businessId = this.extractBusinessId(options.accessToken);
+      const response = await this.httpClient.post(
+        `${WhatsAppService.BASE_URL}/${businessId}/message_templates`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "whatsapp"
+      );
+
+      const result = await response.json();
+
+      if (result.id) {
+        return {
+          success: true,
+          templateId: result.id,
+        };
+      }
+
+      return this.handleTemplateError(result);
+    } catch (error) {
+      return this.handleTemplateError(error);
+    }
+  }
+
+  async updateTemplate(options: TemplateUpdateOptions): Promise<TemplateResponse> {
+    try {
+      this.validateTemplateUpdateOptions(options);
+
+      const payload: any = {};
+      if (options.components) payload.components = options.components;
+      if (options.category) payload.category = options.category;
+
+      const response = await this.httpClient.post(
+        `${WhatsAppService.BASE_URL}/${options.templateId}`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "whatsapp"
+      );
+
+      const result = await response.json();
+
+      if (result.success !== false) {
+        return {
+          success: true,
+          templateId: options.templateId,
+        };
+      }
+
+      return this.handleTemplateError(result);
+    } catch (error) {
+      return this.handleTemplateError(error);
+    }
+  }
+
+  async deleteTemplate(options: TemplateDeleteOptions): Promise<TemplateResponse> {
+    try {
+      this.validateTemplateDeleteOptions(options);
+
+      const response = await this.httpClient.delete(
+        `${WhatsAppService.BASE_URL}/${options.templateId}?name=${encodeURIComponent(options.name)}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "whatsapp"
+      );
+
+      const result = await response.json();
+
+      if (result.success !== false) {
+        return {
+          success: true,
+          templateId: options.templateId,
+        };
+      }
+
+      return this.handleTemplateError(result);
+    } catch (error) {
+      return this.handleTemplateError(error);
+    }
+  }
+
+  async getTemplate(options: TemplateStatusOptions): Promise<TemplateResponse> {
+    try {
+      this.validateTemplateStatusOptions(options);
+
+      const params = new URLSearchParams();
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+      }
+
+      const response = await this.httpClient.get(
+        `${WhatsAppService.BASE_URL}/${options.templateId}?${params.toString()}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "whatsapp"
+      );
+
+      const result = await response.json();
+
+      if (result.id) {
+        return {
+          success: true,
+          template: this.formatTemplate(result),
+        };
+      }
+
+      return this.handleTemplateError(result);
+    } catch (error) {
+      return this.handleTemplateError(error);
+    }
+  }
+
+  async listTemplates(options: TemplateListOptions): Promise<TemplateListResponse> {
+    try {
+      this.validateTemplateListOptions(options);
+
+      const params = new URLSearchParams();
+      
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+      }
+      
+      if (options.limit) params.append("limit", options.limit.toString());
+      if (options.offset) params.append("offset", options.offset);
+      if (options.status) params.append("status", options.status);
+      if (options.category) params.append("category", options.category);
+
+      const businessId = this.extractBusinessId(options.accessToken);
+      const response = await this.httpClient.get(
+        `${WhatsAppService.BASE_URL}/${businessId}/message_templates?${params.toString()}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "whatsapp"
+      );
+
+      const result = await response.json();
+
+      if (result.data) {
+        return {
+          success: true,
+          templates: result.data.map((template: any) => this.formatTemplate(template)),
+          paging: result.paging,
+        };
+      }
+
+      return this.handleTemplateListError(result);
+    } catch (error) {
+      return this.handleTemplateListError(error);
+    }
+  }
+
   private extractPhoneNumberId(_accessToken: string): string {
     // This is a placeholder - in a real implementation, you would need to
     // extract the phone number ID from the access token or require it as a parameter
     // For now, we'll use a placeholder that developers need to replace
     return "PHONE_NUMBER_ID";
+  }
+
+  private extractBusinessId(_accessToken: string): string {
+    // This is a placeholder - in a real implementation, you would need to
+    // extract the business ID from the access token or require it as a parameter
+    // For now, we'll use a placeholder that developers need to replace
+    return "BUSINESS_ID";
+  }
+
+  private validateTemplateCreateOptions(options: TemplateCreateOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.name) {
+      throw new MessageMeshError("INVALID_TEMPLATE_NAME", "whatsapp", "Template name is required");
+    }
+    if (!options.category) {
+      throw new MessageMeshError("INVALID_TEMPLATE_CATEGORY", "whatsapp", "Template category is required");
+    }
+    if (!options.language) {
+      throw new MessageMeshError("INVALID_TEMPLATE_LANGUAGE", "whatsapp", "Template language is required");
+    }
+    if (!options.components || options.components.length === 0) {
+      throw new MessageMeshError("INVALID_TEMPLATE_COMPONENTS", "whatsapp", "Template components are required");
+    }
+  }
+
+  private validateTemplateUpdateOptions(options: TemplateUpdateOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "whatsapp", "Template ID is required");
+    }
+  }
+
+  private validateTemplateDeleteOptions(options: TemplateDeleteOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "whatsapp", "Template ID is required");
+    }
+    if (!options.name) {
+      throw new MessageMeshError("INVALID_TEMPLATE_NAME", "whatsapp", "Template name is required");
+    }
+  }
+
+  private validateTemplateStatusOptions(options: TemplateStatusOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "whatsapp", "Template ID is required");
+    }
+  }
+
+  private validateTemplateListOptions(options: TemplateListOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+  }
+
+  private formatTemplate(apiTemplate: any): Template {
+    return {
+      id: apiTemplate.id,
+      name: apiTemplate.name,
+      status: apiTemplate.status,
+      category: apiTemplate.category,
+      language: apiTemplate.language,
+      components: apiTemplate.components,
+      createdTime: apiTemplate.created_time,
+      modifiedTime: apiTemplate.modified_time,
+      qualityScore: apiTemplate.quality_score ? {
+        score: apiTemplate.quality_score.score,
+        date: apiTemplate.quality_score.date,
+      } : undefined,
+      rejectedReason: apiTemplate.rejected_reason,
+      disabledDate: apiTemplate.disabled_date,
+    };
+  }
+
+  private handleTemplateError(error: unknown): TemplateResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "TEMPLATE_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "whatsapp",
+      },
+    };
+  }
+
+  private handleTemplateListError(error: unknown): TemplateListResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "TEMPLATE_LIST_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "whatsapp",
+      },
+    };
   }
 
   private handleError(error: unknown): SendMessageResponse {

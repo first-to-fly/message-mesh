@@ -32,19 +32,19 @@ bun add message-mesh
 ## Quick Start
 
 ```typescript
-import { MessageMesh } from 'message-mesh';
+import { MessageMesh } from "message-mesh";
 
 const mesh = new MessageMesh({
-  timeout: 30000,        // Request timeout in ms (default: 30000)
-  retryAttempts: 3      // Number of retry attempts (default: 3)
+  timeout: 30000, // Request timeout in ms (default: 30000)
+  retryAttempts: 3, // Number of retry attempts (default: 3)
 });
 
 // Send a WhatsApp message
 const result = await mesh.whatsapp.sendMessage({
-  accessToken: 'YOUR_ACCESS_TOKEN',
-  to: '+1234567890',
-  message: 'Hello from Message-Mesh!',
-  metadata: { userId: '123' }
+  accessToken: "YOUR_ACCESS_TOKEN",
+  to: "+1234567890",
+  message: "Hello from Message-Mesh!",
+  metadata: { userId: "123" },
 });
 ```
 
@@ -61,6 +61,7 @@ new MessageMesh(config?: MessageMeshConfig)
 ```
 
 **Parameters:**
+
 - `config` (optional): Configuration object
   - `timeout?: number` - Request timeout in milliseconds (default: 30000)
   - `retryAttempts?: number` - Number of retry attempts for failed requests (default: 3)
@@ -74,18 +75,23 @@ new MessageMesh(config?: MessageMeshConfig)
 #### Methods
 
 ##### getVersion()
+
 ```typescript
 getVersion(): string
 ```
+
 Returns the current version of the SDK.
 
 ##### getConfig()
+
 ```typescript
 getConfig(): MessageMeshConfig
 ```
+
 Returns the current configuration.
 
 ##### sendUniversalMessage()
+
 ```typescript
 async sendUniversalMessage(options: {
   accessTokens: Partial<Record<Platform, string>>;
@@ -96,6 +102,7 @@ async sendUniversalMessage(options: {
   metadata?: Record<string, any>;
 }): Promise<Record<Platform, SendMessageResponse>>
 ```
+
 Sends a message across multiple platforms with automatic fallback.
 
 ## Platform Services
@@ -103,12 +110,15 @@ Sends a message across multiple platforms with automatic fallback.
 ### WhatsApp Service
 
 #### sendMessage()
+
 ```typescript
 async sendMessage(options: WhatsAppMessageOptions): Promise<SendMessageResponse>
 ```
+
 Sends a text message via WhatsApp.
 
 **Parameters:**
+
 - `accessToken: string` - WhatsApp Business API access token
 - `to: string` - Recipient phone number in E.164 format (e.g., +1234567890)
 - `message: string` - Message content
@@ -117,12 +127,15 @@ Sends a text message via WhatsApp.
 **Returns:** `SendMessageResponse`
 
 #### sendTemplate()
+
 ```typescript
 async sendTemplate(options: WhatsAppTemplateOptions): Promise<SendMessageResponse>
 ```
+
 Sends a pre-approved template message.
 
 **Parameters:**
+
 - `accessToken: string` - WhatsApp Business API access token
 - `to: string` - Recipient phone number
 - `templateName: string` - Name of the approved template
@@ -131,31 +144,35 @@ Sends a pre-approved template message.
 - `metadata?: Record<string, any>` - Optional metadata
 
 **Example:**
+
 ```typescript
 await mesh.whatsapp.sendTemplate({
-  accessToken: 'YOUR_TOKEN',
-  to: '+1234567890',
-  templateName: 'order_confirmation',
-  templateLanguage: 'en',
+  accessToken: "YOUR_TOKEN",
+  to: "+1234567890",
+  templateName: "order_confirmation",
+  templateLanguage: "en",
   templateComponents: [
     {
-      type: 'body',
+      type: "body",
       parameters: [
-        { type: 'text', text: 'John Doe' },
-        { type: 'text', text: '12345' }
-      ]
-    }
-  ]
+        { type: "text", text: "John Doe" },
+        { type: "text", text: "12345" },
+      ],
+    },
+  ],
 });
 ```
 
 #### sendMedia()
+
 ```typescript
 async sendMedia(options: WhatsAppMediaOptions): Promise<SendMessageResponse>
 ```
+
 Sends media messages (images, videos, audio, documents).
 
 **Parameters:**
+
 - `accessToken: string` - WhatsApp Business API access token
 - `to: string` - Recipient phone number
 - `type: "image" | "video" | "audio" | "document"` - Media type
@@ -166,12 +183,15 @@ Sends media messages (images, videos, audio, documents).
 - `metadata?: Record<string, any>` - Optional metadata
 
 #### replyMessage()
+
 ```typescript
 async replyMessage(options: WhatsAppReplyOptions): Promise<SendMessageResponse>
 ```
+
 Replies to a specific message.
 
 **Parameters:**
+
 - `accessToken: string` - WhatsApp Business API access token
 - `to: string` - Recipient phone number
 - `message: string` - Reply message content
@@ -179,12 +199,15 @@ Replies to a specific message.
 - `metadata?: Record<string, any>` - Optional metadata
 
 #### sendReaction()
+
 ```typescript
 async sendReaction(options: WhatsAppReactionOptions): Promise<SendMessageResponse>
 ```
+
 Sends an emoji reaction to a message.
 
 **Parameters:**
+
 - `accessToken: string` - WhatsApp Business API access token
 - `to: string` - Recipient phone number
 - `messageId: string` - ID of the message to react to
@@ -192,12 +215,15 @@ Sends an emoji reaction to a message.
 - `metadata?: Record<string, any>` - Optional metadata
 
 #### sendEmoji()
+
 ```typescript
 async sendEmoji(options: WhatsAppEmojiOptions): Promise<SendMessageResponse>
 ```
+
 Sends a standalone emoji message.
 
 **Parameters:**
+
 - `accessToken: string` - WhatsApp Business API access token
 - `to: string` - Recipient phone number
 - `emoji: string` - Emoji content
@@ -206,24 +232,30 @@ Sends a standalone emoji message.
 ### Messenger Service
 
 #### sendMessage()
+
 ```typescript
 async sendMessage(options: MessengerMessageOptions): Promise<SendMessageResponse>
 ```
+
 Sends a text message via Messenger.
 
 **Parameters:**
+
 - `accessToken: string` - Page access token
 - `to: string` - Facebook user ID (PSID)
 - `message: string` - Message content (max 2000 characters)
 - `metadata?: Record<string, any>` - Optional metadata
 
 #### sendMedia()
+
 ```typescript
 async sendMedia(options: MessengerMediaOptions): Promise<SendMessageResponse>
 ```
+
 Sends media messages via Messenger.
 
 **Parameters:**
+
 - `accessToken: string` - Page access token
 - `to: string` - Facebook user ID (PSID)
 - `type: "image" | "video" | "audio" | "file"` - Media type
@@ -234,12 +266,15 @@ Sends media messages via Messenger.
 - `metadata?: Record<string, any>` - Optional metadata
 
 #### sendTemplate()
+
 ```typescript
 async sendTemplate(options: MessengerTemplateOptions): Promise<SendMessageResponse>
 ```
+
 Sends template messages (buttons, generic, etc.).
 
 **Parameters:**
+
 - `accessToken: string` - Page access token
 - `to: string` - Facebook user ID (PSID)
 - `templateType: "generic" | "button" | "receipt" | "airline"` - Template type
@@ -249,34 +284,38 @@ Sends template messages (buttons, generic, etc.).
 - `metadata?: Record<string, any>` - Optional metadata
 
 **Example:**
+
 ```typescript
 await mesh.messenger.sendTemplate({
-  accessToken: 'YOUR_TOKEN',
-  to: 'USER_PSID',
-  templateType: 'button',
-  text: 'What would you like to do?',
+  accessToken: "YOUR_TOKEN",
+  to: "USER_PSID",
+  templateType: "button",
+  text: "What would you like to do?",
   buttons: [
     {
-      type: 'web_url',
-      title: 'Visit Website',
-      url: 'https://example.com'
+      type: "web_url",
+      title: "Visit Website",
+      url: "https://example.com",
     },
     {
-      type: 'postback',
-      title: 'Get Started',
-      payload: 'GET_STARTED'
-    }
-  ]
+      type: "postback",
+      title: "Get Started",
+      payload: "GET_STARTED",
+    },
+  ],
 });
 ```
 
 #### replyMessage()
+
 ```typescript
 async replyMessage(options: MessengerReplyOptions): Promise<SendMessageResponse>
 ```
+
 Replies to a specific message.
 
 **Parameters:**
+
 - `accessToken: string` - Page access token
 - `to: string` - Facebook user ID (PSID)
 - `message: string` - Reply message content
@@ -286,24 +325,30 @@ Replies to a specific message.
 ### Instagram Service
 
 #### sendMessage()
+
 ```typescript
 async sendMessage(options: InstagramMessageOptions): Promise<SendMessageResponse>
 ```
+
 Sends a text message via Instagram.
 
 **Parameters:**
+
 - `accessToken: string` - Instagram access token
 - `to: string` - Instagram Scoped User ID (IGSID)
 - `message: string` - Message content (max 1000 characters)
 - `metadata?: Record<string, any>` - Optional metadata
 
 #### sendMedia()
+
 ```typescript
 async sendMedia(options: InstagramMediaOptions): Promise<SendMessageResponse>
 ```
+
 Sends media messages via Instagram.
 
 **Parameters:**
+
 - `accessToken: string` - Instagram access token
 - `to: string` - Instagram Scoped User ID (IGSID)
 - `type: "image" | "video" | "audio"` - Media type
@@ -313,12 +358,15 @@ Sends media messages via Instagram.
 - `metadata?: Record<string, any>` - Optional metadata
 
 #### replyMessage()
+
 ```typescript
 async replyMessage(options: InstagramReplyOptions): Promise<SendMessageResponse>
 ```
+
 Replies to a specific message.
 
 **Parameters:**
+
 - `accessToken: string` - Instagram access token
 - `to: string` - Instagram Scoped User ID (IGSID)
 - `message: string` - Reply message content
@@ -328,6 +376,7 @@ Replies to a specific message.
 ## Types and Interfaces
 
 ### SendMessageResponse
+
 ```typescript
 interface SendMessageResponse {
   success: boolean;
@@ -342,11 +391,13 @@ interface SendMessageResponse {
 ```
 
 ### Platform
+
 ```typescript
 type Platform = "whatsapp" | "messenger" | "instagram";
 ```
 
 ### TemplateComponent
+
 ```typescript
 interface TemplateComponent {
   type: "header" | "body" | "footer" | "button";
@@ -355,6 +406,7 @@ interface TemplateComponent {
 ```
 
 ### TemplateParameter
+
 ```typescript
 interface TemplateParameter {
   type: "text" | "currency" | "date_time" | "image" | "document" | "video";
@@ -408,21 +460,21 @@ Common error codes across all platforms:
 ```typescript
 try {
   const result = await mesh.whatsapp.sendMessage({
-    accessToken: 'YOUR_TOKEN',
-    to: '+1234567890',
-    message: 'Hello!'
+    accessToken: "YOUR_TOKEN",
+    to: "+1234567890",
+    message: "Hello!",
   });
-  
+
   if (result.success) {
-    console.log('Message sent:', result.messageId);
+    console.log("Message sent:", result.messageId);
   } else {
-    console.error('Failed:', result.error);
+    console.error("Failed:", result.error);
   }
 } catch (error) {
   if (error instanceof MessageMeshError) {
     console.error(`Error on ${error.platform}: ${error.code} - ${error.message}`);
   } else {
-    console.error('Unexpected error:', error);
+    console.error("Unexpected error:", error);
   }
 }
 ```
@@ -434,19 +486,19 @@ try {
 ```typescript
 // Verify webhook signature
 const isValid = mesh.verifyWebhookSignature(
-  payload,           // Request body as string
-  signature,         // Signature header value
-  appSecret,         // Your app secret
-  'sha256',          // Algorithm (sha1 or sha256)
-  'sha256='          // Optional prefix
+  payload, // Request body as string
+  signature, // Signature header value
+  appSecret, // Your app secret
+  "sha256", // Algorithm (sha1 or sha256)
+  "sha256=" // Optional prefix
 );
 
 // Handle verification challenge
 const result = mesh.handleWebhookChallenge(
-  mode,              // Query param: hub.mode
-  token,             // Query param: hub.verify_token
-  challenge,         // Query param: hub.challenge
-  verifyToken        // Your verify token
+  mode, // Query param: hub.mode
+  token, // Query param: hub.verify_token
+  challenge, // Query param: hub.challenge
+  verifyToken // Your verify token
 );
 ```
 
@@ -454,11 +506,11 @@ const result = mesh.handleWebhookChallenge(
 
 ```typescript
 // Parse webhook events
-const events = mesh.parseWebhookEvents(payload, 'whatsapp');
+const events = mesh.parseWebhookEvents(payload, "whatsapp");
 
 // Register event processors
-mesh.registerWebhookProcessor('message_received', async (event) => {
-  console.log('New message:', event.data);
+mesh.registerWebhookProcessor("message_received", async (event) => {
+  console.log("New message:", event.data);
   // Your processing logic here
 });
 
@@ -478,25 +530,25 @@ await mesh.processWebhookEvents(events);
 
 ```typescript
 // Get all capabilities for a platform
-const capabilities = mesh.getPlatformCapabilities('whatsapp');
+const capabilities = mesh.getPlatformCapabilities("whatsapp");
 
 // Check if a platform supports a feature
-const supportsMedia = mesh.platformSupportsFeature('instagram', 'sendMedia');
+const supportsMedia = mesh.platformSupportsFeature("instagram", "sendMedia");
 
 // Get platforms that support a feature
-const platformsWithTemplates = mesh.getPlatformsWithFeature('sendTemplate');
+const platformsWithTemplates = mesh.getPlatformsWithFeature("sendTemplate");
 
 // Get maximum message length
-const maxLength = mesh.getMaxMessageLength('messenger'); // 2000
+const maxLength = mesh.getMaxMessageLength("messenger"); // 2000
 
 // Get maximum media size (MB)
-const maxSize = mesh.getMaxMediaSize('whatsapp'); // 16
+const maxSize = mesh.getMaxMediaSize("whatsapp"); // 16
 
 // Check if file type is supported
-const isSupported = mesh.isFileTypeSupported('whatsapp', 'application/pdf');
+const isSupported = mesh.isFileTypeSupported("whatsapp", "application/pdf");
 
 // Get rate limits
-const limits = mesh.getRateLimit('whatsapp');
+const limits = mesh.getRateLimit("whatsapp");
 // { default: 80, burst: 500 }
 ```
 
@@ -516,9 +568,9 @@ const matrix = mesh.getFeatureMatrix();
 
 // Find best platform for features
 const bestPlatform = mesh.getBestPlatformForFeatures([
-  'sendTextMessage',
-  'sendMedia',
-  'sendTemplate'
+  "sendTextMessage",
+  "sendMedia",
+  "sendTemplate",
 ]);
 ```
 
@@ -528,7 +580,7 @@ const bestPlatform = mesh.getBestPlatformForFeatures([
 
 ```typescript
 // Get metrics for a specific platform
-const metrics = mesh.getPerformanceMetrics('whatsapp');
+const metrics = mesh.getPerformanceMetrics("whatsapp");
 // {
 //   totalRequests: 1000,
 //   successfulRequests: 950,
@@ -544,7 +596,7 @@ const metrics = mesh.getPerformanceMetrics('whatsapp');
 const allMetrics = mesh.getAllPerformanceMetrics();
 
 // Get recent requests
-const recentRequests = mesh.getRecentRequests('messenger', 10);
+const recentRequests = mesh.getRecentRequests("messenger", 10);
 
 // Get performance summary
 const summary = mesh.getPerformanceSummary();
@@ -597,15 +649,15 @@ const status = await mesh.getSystemStatus();
 ```typescript
 // Configure logging
 mesh.configureLogging({
-  level: 'debug',              // 'debug' | 'info' | 'warn' | 'error'
+  level: "debug", // 'debug' | 'info' | 'warn' | 'error'
   enableConsole: true,
   enableFile: false,
   maxLogSize: 10000,
-  sensitiveFields: ['accessToken', 'password']
+  sensitiveFields: ["accessToken", "password"],
 });
 
 // Get logs
-const logs = mesh.getLogs('error', 'whatsapp', 50);
+const logs = mesh.getLogs("error", "whatsapp", 50);
 
 // Get log statistics
 const logStats = mesh.getLogStats();
@@ -634,29 +686,30 @@ If you're migrating from direct platform APIs:
 ```typescript
 // Before (WhatsApp API)
 const response = await fetch(`https://graph.facebook.com/v18.0/${phoneNumberId}/messages`, {
-  method: 'POST',
+  method: "POST",
   headers: {
-    'Authorization': `Bearer ${accessToken}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${accessToken}`,
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    messaging_product: 'whatsapp',
+    messaging_product: "whatsapp",
     to: phoneNumber,
-    type: 'text',
-    text: { body: message }
-  })
+    type: "text",
+    text: { body: message },
+  }),
 });
 
 // After (Message-Mesh)
 const response = await mesh.whatsapp.sendMessage({
   accessToken,
   to: phoneNumber,
-  message
+  message,
 });
 ```
 
 ## Support
 
 For issues, feature requests, or questions:
+
 - GitHub Issues: [github.com/your-org/message-mesh/issues](https://github.com/your-org/message-mesh/issues)
 - Documentation: [docs.message-mesh.io](https://docs.message-mesh.io)

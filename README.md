@@ -1,6 +1,6 @@
 # Message-Mesh 🚀
 
-A unified messaging SDK for Node.js/Bun applications that provides a simple, consistent interface for sending messages across multiple social media platforms (WhatsApp, Messenger, Instagram). 
+A unified messaging SDK for Node.js/Bun applications that provides a simple, consistent interface for sending messages across multiple social media platforms (WhatsApp, Messenger, Instagram).
 
 [![Version](https://img.shields.io/badge/version-0.1.0-purple.svg)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
@@ -28,17 +28,18 @@ A unified messaging SDK for Node.js/Bun applications that provides a simple, con
 Install directly from GitHub using SSH:
 
 ```bash
-bun add git+ssh://git@github.com/your-org/message-mesh.git
+bun add git+ssh://git@github.com/first-to-fly/message-mesh.git
 # or
-npm install git+ssh://git@github.com/your-org/message-mesh.git
+npm install git+ssh://git@github.com/first-to-fly/message-mesh.git
 # or
-pnpm add git+ssh://git@github.com/your-org/message-mesh.git
+pnpm add git+ssh://git@github.com/first-to-fly/message-mesh.git
 ```
 
 For specific versions or branches:
+
 ```bash
-bun add git+ssh://git@github.com/your-org/message-mesh.git#v1.0.0
-bun add git+ssh://git@github.com/your-org/message-mesh.git#main
+bun add git+ssh://git@github.com/first-to-fly/message-mesh.git#v1.0.0
+bun add git+ssh://git@github.com/first-to-fly/message-mesh.git#main
 ```
 
 ## 🚀 Quick Start
@@ -68,23 +69,32 @@ if (result.success) {
 ## 🌟 Platform Support
 
 ### WhatsApp Business API ✅
+
 - ✅ Text messages with metadata
 - ✅ Template messages with parameters
 - ✅ Reply to messages with context
 - ✅ Emoji reactions to messages
 - ✅ Media messages (image, video, audio, document)
 - ✅ Standalone emoji messages
+- ✅ **Template management** (create, update, delete, status checking)
+- ✅ **Template approval workflow** with Meta/Facebook
 
 ### Facebook Messenger ✅
+
 - ✅ Text messages
 - ✅ Media messages (image, video, audio, file)
 - ✅ Template messages (button, generic)
 - ✅ Reply to messages
+- ✅ **Template management** (create, update, delete, status checking)
+- ✅ **Template approval workflow** with Meta/Facebook
 
 ### Instagram Messaging ✅
+
 - ✅ Text messages
 - ✅ Media messages (image, video, audio)
 - ✅ Reply to messages
+- ✅ **Template management** (create, update, delete, status checking)
+- ✅ **Template approval workflow** with Meta/Facebook
 
 ## 📚 Platform Usage
 
@@ -96,7 +106,7 @@ await messageMesh.whatsapp.sendMessage({
   accessToken: "token",
   to: "+1234567890",
   message: "Hello World!",
-  metadata: { customField: "value" }
+  metadata: { customField: "value" },
 });
 
 // Send template message
@@ -108,9 +118,9 @@ await messageMesh.whatsapp.sendTemplate({
   templateComponents: [
     {
       type: "body",
-      parameters: [{ type: "text", text: "John Doe" }]
-    }
-  ]
+      parameters: [{ type: "text", text: "John Doe" }],
+    },
+  ],
 });
 
 // Reply to message
@@ -118,7 +128,7 @@ await messageMesh.whatsapp.replyMessage({
   accessToken: "token",
   to: "+1234567890",
   message: "Thanks for your message!",
-  replyToMessageId: "original_message_id"
+  replyToMessageId: "original_message_id",
 });
 
 // Send reaction
@@ -126,7 +136,7 @@ await messageMesh.whatsapp.sendReaction({
   accessToken: "token",
   to: "+1234567890",
   messageId: "message_id",
-  emoji: "👍"
+  emoji: "👍",
 });
 
 // Send media
@@ -135,14 +145,91 @@ await messageMesh.whatsapp.sendMedia({
   to: "+1234567890",
   mediaType: "image",
   mediaUrl: "https://example.com/image.jpg",
-  caption: "Check out this image!"
+  caption: "Check out this image!",
 });
 
 // Send emoji
 await messageMesh.whatsapp.sendEmoji({
   accessToken: "token",
   to: "+1234567890",
-  emoji: "🎉"
+  emoji: "🎉",
+});
+```
+
+### WhatsApp Template Management
+
+Manage template lifecycle - create, update, delete, and check approval status:
+
+```typescript
+// Create a new template
+const createResult = await messageMesh.whatsapp.createTemplate({
+  accessToken: "token",
+  name: "welcome_message",
+  category: "MARKETING",
+  language: "en",
+  components: [
+    {
+      type: "HEADER",
+      format: "TEXT",
+      text: "Welcome to our service!"
+    },
+    {
+      type: "BODY",
+      text: "Hello {{1}}, thank you for joining us!"
+    },
+    {
+      type: "FOOTER",
+      text: "Best regards, Team"
+    }
+  ]
+});
+
+if (createResult.success) {
+  console.log("Template created with ID:", createResult.templateId);
+}
+
+// Check template status
+const statusResult = await messageMesh.whatsapp.getTemplate({
+  accessToken: "token",
+  templateId: "template_id"
+});
+
+if (statusResult.success && statusResult.template) {
+  console.log("Template status:", statusResult.template.status); // PENDING, APPROVED, REJECTED
+  console.log("Quality score:", statusResult.template.qualityScore?.score);
+  
+  if (statusResult.template.status === "REJECTED") {
+    console.log("Rejection reason:", statusResult.template.rejectedReason);
+  }
+}
+
+// List all templates
+const listResult = await messageMesh.whatsapp.listTemplates({
+  accessToken: "token",
+  status: "APPROVED", // Only get approved templates
+  category: "MARKETING",
+  limit: 50
+});
+
+if (listResult.success) {
+  console.log("Found templates:", listResult.templates?.length);
+  listResult.templates?.forEach(template => {
+    console.log(`- ${template.name}: ${template.status}`);
+  });
+}
+
+// Update template
+const updateResult = await messageMesh.whatsapp.updateTemplate({
+  accessToken: "token",
+  templateId: "template_id",
+  category: "UTILITY" // Change category if needed
+});
+
+// Delete template
+const deleteResult = await messageMesh.whatsapp.deleteTemplate({
+  accessToken: "token",
+  templateId: "template_id",
+  name: "welcome_message"
 });
 ```
 
@@ -154,7 +241,7 @@ await messageMesh.messenger.sendMessage({
   accessToken: "page-access-token",
   to: "facebook-user-id",
   message: "Hello from Messenger!",
-  metadata: { source: "crm" }
+  metadata: { source: "crm" },
 });
 
 // Send media
@@ -163,7 +250,7 @@ await messageMesh.messenger.sendMedia({
   to: "user-id",
   type: "image",
   mediaUrl: "https://example.com/image.jpg",
-  caption: "Check this out!"
+  caption: "Check this out!",
 });
 
 // Send template
@@ -174,8 +261,8 @@ await messageMesh.messenger.sendTemplate({
   text: "What would you like to do?",
   buttons: [
     { type: "web_url", title: "Visit Website", url: "https://example.com" },
-    { type: "postback", title: "Get Started", payload: "START" }
-  ]
+    { type: "postback", title: "Get Started", payload: "START" },
+  ],
 });
 
 // Reply to message
@@ -183,7 +270,77 @@ await messageMesh.messenger.replyMessage({
   accessToken: "token",
   to: "user-id",
   message: "Thanks for your message!",
-  replyToMessageId: "original_message_id"
+  replyToMessageId: "original_message_id",
+});
+```
+
+### Messenger Template Management
+
+Manage message templates for better customer engagement:
+
+```typescript
+// Create a new Messenger template
+const createResult = await messageMesh.messenger.createTemplate({
+  accessToken: "page-access-token",
+  name: "order_update",
+  category: "SHIPPING_UPDATE",
+  components: [
+    {
+      type: "HEADER",
+      format: "TEXT",
+      text: "Order Update"
+    },
+    {
+      type: "BODY",
+      text: "Your order {{1}} has been shipped and will arrive by {{2}}."
+    },
+    {
+      type: "BUTTONS",
+      buttons: [
+        {
+          type: "URL",
+          text: "Track Package",
+          url: "https://tracking.example.com/{{3}}"
+        },
+        {
+          type: "QUICK_REPLY",
+          text: "Contact Support"
+        }
+      ]
+    }
+  ]
+});
+
+// Check template status
+const statusResult = await messageMesh.messenger.getTemplate({
+  accessToken: "page-access-token",
+  templateId: "template_id"
+});
+
+if (statusResult.success && statusResult.template) {
+  console.log("Template status:", statusResult.template.status);
+  console.log("Quality score:", statusResult.template.qualityScore?.score);
+}
+
+// List approved templates
+const listResult = await messageMesh.messenger.listTemplates({
+  accessToken: "page-access-token",
+  status: "APPROVED",
+  category: "SHIPPING_UPDATE"
+});
+
+// Update template
+await messageMesh.messenger.updateTemplate({
+  accessToken: "page-access-token",
+  templateId: "template_id",
+  category: "ACCOUNT_UPDATE"
+});
+
+// Delete template
+await messageMesh.messenger.deleteTemplate({
+  accessToken: "page-access-token",
+  templateId: "template_id",
+  name: "order_update"
 });
 ```
 
@@ -195,7 +352,7 @@ await messageMesh.instagram.sendMessage({
   accessToken: "instagram-access-token",
   to: "instagram-scoped-user-id",
   message: "Hello from Instagram!",
-  metadata: { campaign: "welcome" }
+  metadata: { campaign: "welcome" },
 });
 
 // Send media
@@ -204,7 +361,7 @@ await messageMesh.instagram.sendMedia({
   to: "igsid",
   type: "image",
   mediaUrl: "https://example.com/photo.jpg",
-  caption: "Beautiful photo! 📸"
+  caption: "Beautiful photo! 📸",
 });
 
 // Reply to message
@@ -212,7 +369,84 @@ await messageMesh.instagram.replyMessage({
   accessToken: "token",
   to: "igsid",
   message: "Thanks for your comment!",
-  replyToMessageId: "original_message_id"
+  replyToMessageId: "original_message_id",
+});
+```
+
+### Instagram Template Management
+
+Create and manage templates for Instagram business messaging:
+
+```typescript
+// Create a new Instagram template
+const createResult = await messageMesh.instagram.createTemplate({
+  accessToken: "instagram-access-token",
+  name: "appointment_reminder",
+  category: "APPOINTMENT_UPDATE",
+  components: [
+    {
+      type: "HEADER",
+      format: "TEXT",
+      text: "Appointment Reminder"
+    },
+    {
+      type: "BODY",
+      text: "Hi {{1}}! This is a reminder about your appointment on {{2}} at {{3}}."
+    },
+    {
+      type: "BUTTONS",
+      buttons: [
+        {
+          type: "QUICK_REPLY",
+          text: "Confirm"
+        },
+        {
+          type: "QUICK_REPLY", 
+          text: "Reschedule"
+        }
+      ]
+    }
+  ]
+});
+
+// Check template approval status
+const statusResult = await messageMesh.instagram.getTemplate({
+  accessToken: "instagram-access-token",
+  templateId: "template_id"
+});
+
+if (statusResult.success && statusResult.template) {
+  console.log("Template status:", statusResult.template.status);
+  if (statusResult.template.status === "REJECTED") {
+    console.log("Rejection reason:", statusResult.template.rejectedReason);
+  }
+}
+
+// List all templates
+const listResult = await messageMesh.instagram.listTemplates({
+  accessToken: "instagram-access-token",
+  status: "APPROVED",
+  limit: 25
+});
+
+if (listResult.success) {
+  listResult.templates?.forEach(template => {
+    console.log(`${template.name}: ${template.status}`);
+  });
+}
+
+// Update template category
+await messageMesh.instagram.updateTemplate({
+  accessToken: "instagram-access-token",
+  templateId: "template_id",
+  category: "RESERVATION_UPDATE"
+});
+
+// Delete template
+await messageMesh.instagram.deleteTemplate({
+  accessToken: "instagram-access-token",
+  templateId: "template_id",
+  name: "appointment_reminder"
 });
 ```
 
@@ -226,15 +460,15 @@ const results = await messageMesh.sendUniversalMessage({
   accessTokens: {
     whatsapp: "whatsapp-token",
     messenger: "messenger-token",
-    instagram: "instagram-token"
+    instagram: "instagram-token",
   },
   to: {
     whatsapp: "+1234567890",
     messenger: "facebook-user-id",
-    instagram: "instagram-user-id"
+    instagram: "instagram-user-id",
   },
   message: "Hello from all platforms!",
-  preferredPlatforms: ["whatsapp", "messenger"]
+  preferredPlatforms: ["whatsapp", "messenger"],
 });
 
 // Check results for each platform
@@ -260,7 +494,7 @@ console.log("Supports templates:", whatsappCaps.sendTemplate); // true
 // Validate message across platforms
 const validation = messageMesh.validateMessageAcrossPlatforms({
   message: "Your message here",
-  platforms: ["whatsapp", "messenger", "instagram"]
+  platforms: ["whatsapp", "messenger", "instagram"],
 });
 
 // Get platform-specific recommendations
@@ -302,7 +536,7 @@ Enterprise-grade security with automatic validation:
 messageMesh.configureLogging({
   level: "info",
   enableConsole: true,
-  sensitiveFields: ["accessToken", "phoneNumber", "email"]
+  sensitiveFields: ["accessToken", "phoneNumber", "email"],
 });
 
 // All inputs are automatically:
@@ -318,11 +552,7 @@ Secure webhook processing with signature verification:
 
 ```typescript
 // Verify webhook signature
-const isValid = messageMesh.verifyWebhookSignature(
-  payload,
-  signature,
-  "your-webhook-secret"
-);
+const isValid = messageMesh.verifyWebhookSignature(payload, signature, "your-webhook-secret");
 
 // Handle verification challenge
 const challengeResult = messageMesh.handleWebhookChallenge(
@@ -348,16 +578,16 @@ await messageMesh.processWebhookEvents(events);
 
 ```typescript
 const messageMesh = new MessageMesh({
-  timeout: 60000,       // Request timeout in milliseconds (default: 30000)
-  retryAttempts: 5      // Number of retry attempts (default: 3)
+  timeout: 60000, // Request timeout in milliseconds (default: 30000)
+  retryAttempts: 5, // Number of retry attempts (default: 3)
 });
 
 // Configure logging
 messageMesh.configureLogging({
-  level: "debug",       // "debug" | "info" | "warn" | "error"
-  enableConsole: true,  // Enable console output
-  maxLogSize: 1000,     // Max log entries in memory
-  sensitiveFields: ["accessToken", "secret"] // Fields to redact
+  level: "debug", // "debug" | "info" | "warn" | "error"
+  enableConsole: true, // Enable console output
+  maxLogSize: 1000, // Max log entries in memory
+  sensitiveFields: ["accessToken", "secret"], // Fields to redact
 });
 ```
 
@@ -370,7 +600,7 @@ const result = await messageMesh.whatsapp.sendMessage(options);
 
 if (!result.success) {
   const { code, message, platform } = result.error;
-  
+
   switch (code) {
     case "INVALID_ACCESS_TOKEN":
       console.error("Check your access token");
@@ -457,17 +687,20 @@ src/
 ## 📋 Platform Requirements
 
 ### WhatsApp Business API
+
 - Business verification with Meta
 - WhatsApp Business API access token
 - Phone number ID from Meta Business Manager
 - Templates must be pre-approved for production
 
 ### Facebook Messenger
+
 - Facebook Page with messaging enabled
 - Page access token with `pages_messaging` permission
 - Users must message your page first (24-hour window)
 
 ### Instagram Messaging
+
 - Instagram Business or Creator account
 - Connected to Facebook Page
 - Instagram access token with messaging permissions
@@ -506,6 +739,7 @@ This is an internal project for CRM applications. Please contact the Internal CR
 ## 📞 Support
 
 For issues and questions:
+
 - Check the [documentation](./docs/)
 - Review existing issues
 - Create a new issue with detailed information

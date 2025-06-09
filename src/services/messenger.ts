@@ -5,6 +5,14 @@ import type {
   MessengerMediaOptions,
   MessengerTemplateOptions,
   MessengerReplyOptions,
+  MessengerTemplateCreateOptions,
+  MessengerTemplateUpdateOptions,
+  MessengerTemplateDeleteOptions,
+  MessengerTemplateListOptions,
+  MessengerTemplateStatusOptions,
+  MessengerTemplateResponse,
+  MessengerTemplateListResponse,
+  MessengerTemplate,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -299,6 +307,181 @@ export class MessengerService implements IMessengerService {
     }
   }
 
+  // Template Management Methods
+
+  async createTemplate(options: MessengerTemplateCreateOptions): Promise<MessengerTemplateResponse> {
+    try {
+      this.validateMessengerTemplateCreateOptions(options);
+
+      const payload = {
+        name: options.name,
+        category: options.category,
+        language: options.language || "en_US",
+        components: options.components,
+      };
+
+      const pageId = await this.extractPageId(options.accessToken);
+      const response = await this.httpClient.post(
+        `${MessengerService.BASE_URL}/${pageId}/message_templates`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "messenger"
+      );
+
+      const result = await response.json();
+
+      if (result.id) {
+        return {
+          success: true,
+          templateId: result.id,
+        };
+      }
+
+      return this.handleMessengerTemplateError(result);
+    } catch (error) {
+      return this.handleMessengerTemplateError(error);
+    }
+  }
+
+  async updateTemplate(options: MessengerTemplateUpdateOptions): Promise<MessengerTemplateResponse> {
+    try {
+      this.validateMessengerTemplateUpdateOptions(options);
+
+      const payload: any = {};
+      if (options.components) payload.components = options.components;
+      if (options.category) payload.category = options.category;
+
+      const response = await this.httpClient.post(
+        `${MessengerService.BASE_URL}/${options.templateId}`,
+        JSON.stringify(payload),
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        "messenger"
+      );
+
+      const result = await response.json();
+
+      if (result.success !== false) {
+        return {
+          success: true,
+          templateId: options.templateId,
+        };
+      }
+
+      return this.handleMessengerTemplateError(result);
+    } catch (error) {
+      return this.handleMessengerTemplateError(error);
+    }
+  }
+
+  async deleteTemplate(options: MessengerTemplateDeleteOptions): Promise<MessengerTemplateResponse> {
+    try {
+      this.validateMessengerTemplateDeleteOptions(options);
+
+      const response = await this.httpClient.delete(
+        `${MessengerService.BASE_URL}/${options.templateId}?name=${encodeURIComponent(options.name)}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "messenger"
+      );
+
+      const result = await response.json();
+
+      if (result.success !== false) {
+        return {
+          success: true,
+          templateId: options.templateId,
+        };
+      }
+
+      return this.handleMessengerTemplateError(result);
+    } catch (error) {
+      return this.handleMessengerTemplateError(error);
+    }
+  }
+
+  async getTemplate(options: MessengerTemplateStatusOptions): Promise<MessengerTemplateResponse> {
+    try {
+      this.validateMessengerTemplateStatusOptions(options);
+
+      const params = new URLSearchParams();
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+      }
+
+      const response = await this.httpClient.get(
+        `${MessengerService.BASE_URL}/${options.templateId}?${params.toString()}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "messenger"
+      );
+
+      const result = await response.json();
+
+      if (result.id) {
+        return {
+          success: true,
+          template: this.formatMessengerTemplate(result),
+        };
+      }
+
+      return this.handleMessengerTemplateError(result);
+    } catch (error) {
+      return this.handleMessengerTemplateError(error);
+    }
+  }
+
+  async listTemplates(options: MessengerTemplateListOptions): Promise<MessengerTemplateListResponse> {
+    try {
+      this.validateMessengerTemplateListOptions(options);
+
+      const params = new URLSearchParams();
+      
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+      }
+      
+      if (options.limit) params.append("limit", options.limit.toString());
+      if (options.offset) params.append("offset", options.offset);
+      if (options.status) params.append("status", options.status);
+      if (options.category) params.append("category", options.category);
+
+      const pageId = await this.extractPageId(options.accessToken);
+      const response = await this.httpClient.get(
+        `${MessengerService.BASE_URL}/${pageId}/message_templates?${params.toString()}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "messenger"
+      );
+
+      const result = await response.json();
+
+      if (result.data) {
+        return {
+          success: true,
+          templates: result.data.map((template: any) => this.formatMessengerTemplate(template)),
+          paging: result.paging,
+        };
+      }
+
+      return this.handleMessengerTemplateListError(result);
+    } catch (error) {
+      return this.handleMessengerTemplateListError(error);
+    }
+  }
+
   private async extractPageId(accessToken: string): Promise<string> {
     try {
       const response = await this.httpClient.get(
@@ -509,6 +692,120 @@ export class MessengerService implements IMessengerService {
         "Reply message ID is required"
       );
     }
+  }
+
+  private validateMessengerTemplateCreateOptions(options: MessengerTemplateCreateOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "messenger", "Access token is required");
+    }
+    if (!options.name) {
+      throw new MessageMeshError("INVALID_TEMPLATE_NAME", "messenger", "Template name is required");
+    }
+    if (!options.category) {
+      throw new MessageMeshError("INVALID_TEMPLATE_CATEGORY", "messenger", "Template category is required");
+    }
+    if (!options.components || options.components.length === 0) {
+      throw new MessageMeshError("INVALID_TEMPLATE_COMPONENTS", "messenger", "Template components are required");
+    }
+  }
+
+  private validateMessengerTemplateUpdateOptions(options: MessengerTemplateUpdateOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "messenger", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "messenger", "Template ID is required");
+    }
+  }
+
+  private validateMessengerTemplateDeleteOptions(options: MessengerTemplateDeleteOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "messenger", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "messenger", "Template ID is required");
+    }
+    if (!options.name) {
+      throw new MessageMeshError("INVALID_TEMPLATE_NAME", "messenger", "Template name is required");
+    }
+  }
+
+  private validateMessengerTemplateStatusOptions(options: MessengerTemplateStatusOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "messenger", "Access token is required");
+    }
+    if (!options.templateId) {
+      throw new MessageMeshError("INVALID_TEMPLATE_ID", "messenger", "Template ID is required");
+    }
+  }
+
+  private validateMessengerTemplateListOptions(options: MessengerTemplateListOptions): void {
+    if (!options.accessToken) {
+      throw new MessageMeshError("INVALID_ACCESS_TOKEN", "messenger", "Access token is required");
+    }
+  }
+
+  private formatMessengerTemplate(apiTemplate: any): MessengerTemplate {
+    return {
+      id: apiTemplate.id,
+      name: apiTemplate.name,
+      status: apiTemplate.status,
+      category: apiTemplate.category,
+      language: apiTemplate.language,
+      components: apiTemplate.components,
+      createdTime: apiTemplate.created_time,
+      modifiedTime: apiTemplate.modified_time,
+      qualityScore: apiTemplate.quality_score ? {
+        score: apiTemplate.quality_score.score,
+        date: apiTemplate.quality_score.date,
+      } : undefined,
+      rejectedReason: apiTemplate.rejected_reason,
+      disabledDate: apiTemplate.disabled_date,
+    };
+  }
+
+  private handleMessengerTemplateError(error: unknown): MessengerTemplateResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "MESSENGER_TEMPLATE_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "messenger",
+      },
+    };
+  }
+
+  private handleMessengerTemplateListError(error: unknown): MessengerTemplateListResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "MESSENGER_TEMPLATE_LIST_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "messenger",
+      },
+    };
   }
 
   private handleError(error: unknown): SendMessageResponse {

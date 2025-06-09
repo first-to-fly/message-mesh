@@ -170,6 +170,290 @@ export interface InstagramReplyOptions {
   metadata?: Record<string, any>;
 }
 
+// Template Management Types
+export interface TemplateCreateOptions {
+  accessToken: string;
+  name: string;
+  category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
+  language: string;
+  components: TemplateComponent[];
+  allowCategoryChange?: boolean;
+}
+
+export interface TemplateUpdateOptions {
+  accessToken: string;
+  templateId: string;
+  components?: TemplateComponent[];
+  category?: "MARKETING" | "UTILITY" | "AUTHENTICATION";
+}
+
+export interface TemplateDeleteOptions {
+  accessToken: string;
+  templateId: string;
+  name: string;
+}
+
+export interface TemplateListOptions {
+  accessToken: string;
+  fields?: string[];
+  limit?: number;
+  offset?: string;
+  status?: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+  category?: "MARKETING" | "UTILITY" | "AUTHENTICATION";
+}
+
+export interface TemplateStatusOptions {
+  accessToken: string;
+  templateId: string;
+  fields?: string[];
+}
+
+export interface Template {
+  id: string;
+  name: string;
+  status: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+  category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
+  language: string;
+  components: TemplateComponent[];
+  createdTime?: string;
+  modifiedTime?: string;
+  qualityScore?: {
+    score: "GREEN" | "YELLOW" | "RED" | "UNKNOWN";
+    date?: string;
+  };
+  rejectedReason?: string;
+  disabledDate?: string;
+}
+
+export interface TemplateResponse {
+  success: boolean;
+  template?: Template;
+  templates?: Template[];
+  templateId?: string;
+  error?: {
+    code: string;
+    message: string;
+    platform: "whatsapp" | "messenger" | "instagram";
+  };
+}
+
+export interface TemplateListResponse {
+  success: boolean;
+  templates?: Template[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+    platform: "whatsapp" | "messenger" | "instagram";
+  };
+}
+
+// Messenger Template Management Types
+export interface MessengerTemplateCreateOptions {
+  accessToken: string;
+  name: string;
+  category: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+  components: MessengerTemplateComponent[];
+  language?: string;
+}
+
+export interface MessengerTemplateUpdateOptions {
+  accessToken: string;
+  templateId: string;
+  components?: MessengerTemplateComponent[];
+  category?: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+}
+
+export interface MessengerTemplateDeleteOptions {
+  accessToken: string;
+  templateId: string;
+  name: string;
+}
+
+export interface MessengerTemplateListOptions {
+  accessToken: string;
+  fields?: string[];
+  limit?: number;
+  offset?: string;
+  status?: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+  category?: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+}
+
+export interface MessengerTemplateStatusOptions {
+  accessToken: string;
+  templateId: string;
+  fields?: string[];
+}
+
+export interface MessengerTemplate {
+  id: string;
+  name: string;
+  status: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+  category: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+  language: string;
+  components: MessengerTemplateComponent[];
+  createdTime?: string;
+  modifiedTime?: string;
+  qualityScore?: {
+    score: "GREEN" | "YELLOW" | "RED" | "UNKNOWN";
+    date?: string;
+  };
+  rejectedReason?: string;
+  disabledDate?: string;
+}
+
+export interface MessengerTemplateComponent {
+  type: "HEADER" | "BODY" | "FOOTER" | "BUTTONS";
+  text?: string;
+  format?: "TEXT" | "IMAGE" | "VIDEO" | "DOCUMENT";
+  example?: {
+    header_text?: string[];
+    body_text?: string[][];
+  };
+  buttons?: Array<{
+    type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER";
+    text: string;
+    url?: string;
+    phone_number?: string;
+  }>;
+}
+
+export interface MessengerTemplateResponse {
+  success: boolean;
+  template?: MessengerTemplate;
+  templates?: MessengerTemplate[];
+  templateId?: string;
+  error?: {
+    code: string;
+    message: string;
+    platform: "whatsapp" | "messenger" | "instagram";
+  };
+}
+
+export interface MessengerTemplateListResponse {
+  success: boolean;
+  templates?: MessengerTemplate[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+    platform: "whatsapp" | "messenger" | "instagram";
+  };
+}
+
+// Instagram Template Management Types
+export interface InstagramTemplateCreateOptions {
+  accessToken: string;
+  name: string;
+  category: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+  components: InstagramTemplateComponent[];
+  language?: string;
+}
+
+export interface InstagramTemplateUpdateOptions {
+  accessToken: string;
+  templateId: string;
+  components?: InstagramTemplateComponent[];
+  category?: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+}
+
+export interface InstagramTemplateDeleteOptions {
+  accessToken: string;
+  templateId: string;
+  name: string;
+}
+
+export interface InstagramTemplateListOptions {
+  accessToken: string;
+  fields?: string[];
+  limit?: number;
+  offset?: string;
+  status?: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+  category?: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+}
+
+export interface InstagramTemplateStatusOptions {
+  accessToken: string;
+  templateId: string;
+  fields?: string[];
+}
+
+export interface InstagramTemplate {
+  id: string;
+  name: string;
+  status: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+  category: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+  language: string;
+  components: InstagramTemplateComponent[];
+  createdTime?: string;
+  modifiedTime?: string;
+  qualityScore?: {
+    score: "GREEN" | "YELLOW" | "RED" | "UNKNOWN";
+    date?: string;
+  };
+  rejectedReason?: string;
+  disabledDate?: string;
+}
+
+export interface InstagramTemplateComponent {
+  type: "HEADER" | "BODY" | "FOOTER" | "BUTTONS";
+  text?: string;
+  format?: "TEXT" | "IMAGE" | "VIDEO";
+  example?: {
+    header_text?: string[];
+    body_text?: string[][];
+  };
+  buttons?: Array<{
+    type: "QUICK_REPLY" | "URL";
+    text: string;
+    url?: string;
+  }>;
+}
+
+export interface InstagramTemplateResponse {
+  success: boolean;
+  template?: InstagramTemplate;
+  templates?: InstagramTemplate[];
+  templateId?: string;
+  error?: {
+    code: string;
+    message: string;
+    platform: "whatsapp" | "messenger" | "instagram";
+  };
+}
+
+export interface InstagramTemplateListResponse {
+  success: boolean;
+  templates?: InstagramTemplate[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+    platform: "whatsapp" | "messenger" | "instagram";
+  };
+}
+
 export class MessageMeshError extends Error {
   constructor(
     public code: string,
