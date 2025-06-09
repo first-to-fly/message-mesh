@@ -30,7 +30,7 @@ interface WhatsAppApiResponse {
 }
 
 export class WhatsAppService implements IWhatsAppService {
-  private static readonly BASE_URL = "https://graph.facebook.com/v18.0";
+  private static readonly BASE_URL = "https://graph.facebook.com/v23.0";
 
   constructor(private httpClient: HttpClient) {}
 

@@ -685,7 +685,7 @@ If you're migrating from direct platform APIs:
 
 ```typescript
 // Before (WhatsApp API)
-const response = await fetch(`https://graph.facebook.com/v18.0/${phoneNumberId}/messages`, {
+const response = await fetch(`https://graph.facebook.com/v23.0/${phoneNumberId}/messages`, {
   method: "POST",
   headers: {
     Authorization: `Bearer ${accessToken}`,

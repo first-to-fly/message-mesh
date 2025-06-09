@@ -18,7 +18,7 @@ import { MessageMeshError } from "../types.js";
 import { SecurityUtils } from "../security.js";
 
 export class InstagramService implements IInstagramService {
-  private static readonly BASE_URL = "https://graph.instagram.com/v18.0";
+  private static readonly BASE_URL = "https://graph.instagram.com/v23.0";
 
   constructor(private httpClient: HttpClient) {}
 

@@ -19,7 +19,7 @@ import { MessageMeshError } from "../types.js";
 import { SecurityUtils } from "../security.js";
 
 export class MessengerService implements IMessengerService {
-  private static readonly BASE_URL = "https://graph.facebook.com/v18.0";
+  private static readonly BASE_URL = "https://graph.facebook.com/v23.0";
 
   constructor(private httpClient: HttpClient) {}
 

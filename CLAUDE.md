@@ -68,7 +68,7 @@ The WhatsApp service provides comprehensive messaging capabilities:
 - **Emoji Messages**: Standalone emoji sending
 
 ### Important Notes
-- Uses Facebook Graph API v18.0
+- Uses Facebook Graph API v23.0
 - Requires WhatsApp Business API access token
 - Phone number ID extraction is placeholder (line 342-347 in whatsapp.ts)
 - All methods return standardized `SendMessageResponse` format
