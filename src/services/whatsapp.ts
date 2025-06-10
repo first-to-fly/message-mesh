@@ -447,7 +447,7 @@ export class WhatsAppService implements IWhatsAppService {
         ...(options.allowCategoryChange && { allow_category_change: options.allowCategoryChange }),
       };
 
-      const businessId = this.extractBusinessId(options.accessToken);
+      const businessId = options.businessId || this.extractBusinessId(options.accessToken);
       const response = await this.httpClient.post(
         `${WhatsAppService.BASE_URL}/${businessId}/message_templates`,
         JSON.stringify(payload),

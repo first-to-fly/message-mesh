@@ -173,6 +173,7 @@ export interface InstagramReplyOptions {
 // Template Management Types
 export interface TemplateCreateOptions {
   accessToken: string;
+  businessId?: string; // WhatsApp Business Account ID
   name: string;
   category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
   language: string;
