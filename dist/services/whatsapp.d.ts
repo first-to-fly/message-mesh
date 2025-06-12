@@ -1,0 +1,37 @@
+import type { IWhatsAppService } from "../interfaces.js";
+import type { SendMessageResponse, WhatsAppMessageOptions, WhatsAppTemplateOptions, WhatsAppReplyOptions, WhatsAppReactionOptions, WhatsAppMediaOptions, WhatsAppEmojiOptions, TemplateCreateOptions, TemplateUpdateOptions, TemplateDeleteOptions, TemplateListOptions, TemplateStatusOptions, TemplateResponse, TemplateListResponse } from "../types.js";
+import { HttpClient } from "../http-client.js";
+export declare class WhatsAppService implements IWhatsAppService {
+    private httpClient;
+    private static readonly BASE_URL;
+    constructor(httpClient: HttpClient);
+    validateAccessToken(accessToken: string): Promise<boolean>;
+    sendMessage(options: WhatsAppMessageOptions): Promise<SendMessageResponse>;
+    sendTemplate(options: WhatsAppTemplateOptions): Promise<SendMessageResponse>;
+    replyMessage(options: WhatsAppReplyOptions): Promise<SendMessageResponse>;
+    sendReaction(options: WhatsAppReactionOptions): Promise<SendMessageResponse>;
+    sendMedia(options: WhatsAppMediaOptions): Promise<SendMessageResponse>;
+    sendEmoji(options: WhatsAppEmojiOptions): Promise<SendMessageResponse>;
+    private validateMessageOptions;
+    private validateTemplateOptions;
+    private validateReplyOptions;
+    private validateReactionOptions;
+    private validateMediaOptions;
+    private validateEmojiOptions;
+    createTemplate(options: TemplateCreateOptions): Promise<TemplateResponse>;
+    updateTemplate(options: TemplateUpdateOptions): Promise<TemplateResponse>;
+    deleteTemplate(options: TemplateDeleteOptions): Promise<TemplateResponse>;
+    getTemplate(options: TemplateStatusOptions): Promise<TemplateResponse>;
+    listTemplates(options: TemplateListOptions): Promise<TemplateListResponse>;
+    private extractPhoneNumberId;
+    private extractBusinessId;
+    private validateTemplateCreateOptions;
+    private validateTemplateUpdateOptions;
+    private validateTemplateDeleteOptions;
+    private validateTemplateStatusOptions;
+    private validateTemplateListOptions;
+    private formatTemplate;
+    private handleTemplateError;
+    private handleTemplateListError;
+    private handleError;
+}

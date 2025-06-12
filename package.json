@@ -17,7 +17,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir=dist --target=bun --splitting",
+    "build": "bun run build:js && bun run build:types",
+    "build:js": "bun build ./src/index.ts --outdir=dist --target=bun --splitting",
+    "build:types": "tsc --project tsconfig.build.json",
     "dev": "bun --watch src/index.ts",
     "test": "bun test",
     "test:watch": "bun test --watch",
@@ -63,7 +65,9 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "message-mesh": "github:first-to-fly/message-mesh"
+  },
   "repository": {
     "type": "git",
     "url": "internal"

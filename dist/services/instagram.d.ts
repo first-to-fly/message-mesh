@@ -1,0 +1,30 @@
+import type { IInstagramService } from "../interfaces.js";
+import type { SendMessageResponse, InstagramMessageOptions, InstagramMediaOptions, InstagramReplyOptions, InstagramTemplateCreateOptions, InstagramTemplateUpdateOptions, InstagramTemplateDeleteOptions, InstagramTemplateListOptions, InstagramTemplateStatusOptions, InstagramTemplateResponse, InstagramTemplateListResponse } from "../types.js";
+import { HttpClient } from "../http-client.js";
+export declare class InstagramService implements IInstagramService {
+    private httpClient;
+    private static readonly BASE_URL;
+    constructor(httpClient: HttpClient);
+    validateAccessToken(accessToken: string): Promise<boolean>;
+    sendMessage(options: InstagramMessageOptions): Promise<SendMessageResponse>;
+    sendMedia(options: InstagramMediaOptions): Promise<SendMessageResponse>;
+    replyMessage(options: InstagramReplyOptions): Promise<SendMessageResponse>;
+    createTemplate(options: InstagramTemplateCreateOptions): Promise<InstagramTemplateResponse>;
+    updateTemplate(options: InstagramTemplateUpdateOptions): Promise<InstagramTemplateResponse>;
+    deleteTemplate(options: InstagramTemplateDeleteOptions): Promise<InstagramTemplateResponse>;
+    getTemplate(options: InstagramTemplateStatusOptions): Promise<InstagramTemplateResponse>;
+    listTemplates(options: InstagramTemplateListOptions): Promise<InstagramTemplateListResponse>;
+    private extractInstagramAccountId;
+    private validateMessageOptions;
+    private validateMediaOptions;
+    private validateReplyOptions;
+    private validateInstagramTemplateCreateOptions;
+    private validateInstagramTemplateUpdateOptions;
+    private validateInstagramTemplateDeleteOptions;
+    private validateInstagramTemplateStatusOptions;
+    private validateInstagramTemplateListOptions;
+    private formatInstagramTemplate;
+    private handleInstagramTemplateError;
+    private handleInstagramTemplateListError;
+    private handleError;
+}
