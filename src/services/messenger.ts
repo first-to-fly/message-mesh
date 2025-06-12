@@ -13,6 +13,7 @@ import type {
   MessengerTemplateResponse,
   MessengerTemplateListResponse,
   MessengerTemplate,
+  MessengerTemplateComponent,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -20,7 +21,7 @@ import { SecurityUtils } from "../security.js";
 
 interface MessengerApiResponse {
   id?: string;
-  data?: any[];
+  data?: unknown[];
   paging?: {
     cursors?: {
       before?: string;
@@ -370,7 +371,7 @@ export class MessengerService implements IMessengerService {
     try {
       this.validateMessengerTemplateUpdateOptions(options);
 
-      const payload: any = {};
+      const payload: Record<string, unknown> = {};
       if (options.components) payload.components = options.components;
       if (options.category) payload.category = options.category;
 
@@ -454,7 +455,7 @@ export class MessengerService implements IMessengerService {
       if (result.id) {
         return {
           success: true,
-          template: this.formatMessengerTemplate(result),
+          template: this.formatMessengerTemplate(result as Record<string, unknown>),
         };
       }
 
@@ -495,7 +496,7 @@ export class MessengerService implements IMessengerService {
       if (result.data) {
         return {
           success: true,
-          templates: result.data.map((template: any) => this.formatMessengerTemplate(template)),
+          templates: result.data.map((template: unknown) => this.formatMessengerTemplate(template as Record<string, unknown>)),
           paging: result.paging,
         };
       }
@@ -769,22 +770,39 @@ export class MessengerService implements IMessengerService {
     }
   }
 
-  private formatMessengerTemplate(apiTemplate: any): MessengerTemplate {
+  private formatMessengerTemplate(apiTemplate: Record<string, unknown>): MessengerTemplate {
+    const template = apiTemplate as {
+      id: string;
+      name: string;
+      status: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+      category: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+      language: string;
+      components: MessengerTemplateComponent[];
+      created_time?: string;
+      modified_time?: string;
+      quality_score?: {
+        score: "GREEN" | "YELLOW" | "RED" | "UNKNOWN";
+        date?: string;
+      };
+      rejected_reason?: string;
+      disabled_date?: string;
+    };
+    
     return {
-      id: apiTemplate.id,
-      name: apiTemplate.name,
-      status: apiTemplate.status,
-      category: apiTemplate.category,
-      language: apiTemplate.language,
-      components: apiTemplate.components,
-      createdTime: apiTemplate.created_time,
-      modifiedTime: apiTemplate.modified_time,
-      qualityScore: apiTemplate.quality_score ? {
-        score: apiTemplate.quality_score.score,
-        date: apiTemplate.quality_score.date,
+      id: template.id,
+      name: template.name,
+      status: template.status,
+      category: template.category,
+      language: template.language,
+      components: template.components,
+      createdTime: template.created_time,
+      modifiedTime: template.modified_time,
+      qualityScore: template.quality_score ? {
+        score: template.quality_score.score,
+        date: template.quality_score.date,
       } : undefined,
-      rejectedReason: apiTemplate.rejected_reason,
-      disabledDate: apiTemplate.disabled_date,
+      rejectedReason: template.rejected_reason,
+      disabledDate: template.disabled_date,
     };
   }
 

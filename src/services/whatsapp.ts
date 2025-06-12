@@ -15,6 +15,7 @@ import type {
   TemplateResponse,
   TemplateListResponse,
   Template,
+  TemplateComponent,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -23,7 +24,7 @@ import { SecurityUtils } from "../security.js";
 interface WhatsAppApiResponse {
   messages?: Array<{ id: string }>;
   id?: string;
-  data?: any[];
+  data?: unknown[];
   paging?: {
     cursors?: {
       before?: string;
@@ -477,7 +478,7 @@ export class WhatsAppService implements IWhatsAppService {
     try {
       this.validateTemplateUpdateOptions(options);
 
-      const payload: any = {};
+      const payload: Record<string, unknown> = {};
       if (options.components) payload.components = options.components;
       if (options.category) payload.category = options.category;
 
@@ -560,7 +561,7 @@ export class WhatsAppService implements IWhatsAppService {
       if (result.id) {
         return {
           success: true,
-          template: this.formatTemplate(result),
+          template: this.formatTemplate(result as Record<string, unknown>),
         };
       }
 
@@ -604,7 +605,7 @@ export class WhatsAppService implements IWhatsAppService {
       if (result.data) {
         return {
           success: true,
-          templates: result.data.map((template: any) => this.formatTemplate(template)),
+          templates: result.data.map((template: unknown) => this.formatTemplate(template as Record<string, unknown>)),
           paging: result.paging,
         };
       }
@@ -705,24 +706,41 @@ export class WhatsAppService implements IWhatsAppService {
     }
   }
 
-  private formatTemplate(apiTemplate: any): Template {
+  private formatTemplate(apiTemplate: Record<string, unknown>): Template {
+    const template = apiTemplate as {
+      id: string;
+      name: string;
+      status: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
+      category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
+      language: string;
+      components: TemplateComponent[];
+      created_time?: string;
+      modified_time?: string;
+      quality_score?: {
+        score: "GREEN" | "YELLOW" | "RED" | "UNKNOWN";
+        date?: string;
+      };
+      rejected_reason?: string;
+      disabled_date?: string;
+    };
+    
     return {
-      id: apiTemplate.id,
-      name: apiTemplate.name,
-      status: apiTemplate.status,
-      category: apiTemplate.category,
-      language: apiTemplate.language,
-      components: apiTemplate.components,
-      createdTime: apiTemplate.created_time,
-      modifiedTime: apiTemplate.modified_time,
-      qualityScore: apiTemplate.quality_score
+      id: template.id,
+      name: template.name,
+      status: template.status,
+      category: template.category,
+      language: template.language,
+      components: template.components,
+      createdTime: template.created_time,
+      modifiedTime: template.modified_time,
+      qualityScore: template.quality_score
         ? {
-            score: apiTemplate.quality_score.score,
-            date: apiTemplate.quality_score.date,
+            score: template.quality_score.score,
+            date: template.quality_score.date,
           }
         : undefined,
-      rejectedReason: apiTemplate.rejected_reason,
-      disabledDate: apiTemplate.disabled_date,
+      rejectedReason: template.rejected_reason,
+      disabledDate: template.disabled_date,
     };
   }
 

@@ -1125,21 +1125,22 @@ class WhatsAppService {
     }
   }
   formatTemplate(apiTemplate) {
+    const template = apiTemplate;
     return {
-      id: apiTemplate.id,
-      name: apiTemplate.name,
-      status: apiTemplate.status,
-      category: apiTemplate.category,
-      language: apiTemplate.language,
-      components: apiTemplate.components,
-      createdTime: apiTemplate.created_time,
-      modifiedTime: apiTemplate.modified_time,
-      qualityScore: apiTemplate.quality_score ? {
-        score: apiTemplate.quality_score.score,
-        date: apiTemplate.quality_score.date
+      id: template.id,
+      name: template.name,
+      status: template.status,
+      category: template.category,
+      language: template.language,
+      components: template.components,
+      createdTime: template.created_time,
+      modifiedTime: template.modified_time,
+      qualityScore: template.quality_score ? {
+        score: template.quality_score.score,
+        date: template.quality_score.date
       } : undefined,
-      rejectedReason: apiTemplate.rejected_reason,
-      disabledDate: apiTemplate.disabled_date
+      rejectedReason: template.rejected_reason,
+      disabledDate: template.disabled_date
     };
   }
   handleTemplateError(error) {
@@ -1663,21 +1664,22 @@ class MessengerService {
     }
   }
   formatMessengerTemplate(apiTemplate) {
+    const template = apiTemplate;
     return {
-      id: apiTemplate.id,
-      name: apiTemplate.name,
-      status: apiTemplate.status,
-      category: apiTemplate.category,
-      language: apiTemplate.language,
-      components: apiTemplate.components,
-      createdTime: apiTemplate.created_time,
-      modifiedTime: apiTemplate.modified_time,
-      qualityScore: apiTemplate.quality_score ? {
-        score: apiTemplate.quality_score.score,
-        date: apiTemplate.quality_score.date
+      id: template.id,
+      name: template.name,
+      status: template.status,
+      category: template.category,
+      language: template.language,
+      components: template.components,
+      createdTime: template.created_time,
+      modifiedTime: template.modified_time,
+      qualityScore: template.quality_score ? {
+        score: template.quality_score.score,
+        date: template.quality_score.date
       } : undefined,
-      rejectedReason: apiTemplate.rejected_reason,
-      disabledDate: apiTemplate.disabled_date
+      rejectedReason: template.rejected_reason,
+      disabledDate: template.disabled_date
     };
   }
   handleMessengerTemplateError(error) {
@@ -2176,21 +2178,22 @@ class InstagramService {
     }
   }
   formatInstagramTemplate(apiTemplate) {
+    const template = apiTemplate;
     return {
-      id: apiTemplate.id,
-      name: apiTemplate.name,
-      status: apiTemplate.status,
-      category: apiTemplate.category,
-      language: apiTemplate.language,
-      components: apiTemplate.components,
-      createdTime: apiTemplate.created_time,
-      modifiedTime: apiTemplate.modified_time,
-      qualityScore: apiTemplate.quality_score ? {
-        score: apiTemplate.quality_score.score,
-        date: apiTemplate.quality_score.date
+      id: template.id,
+      name: template.name,
+      status: template.status,
+      category: template.category,
+      language: template.language,
+      components: template.components,
+      createdTime: template.created_time,
+      modifiedTime: template.modified_time,
+      qualityScore: template.quality_score ? {
+        score: template.quality_score.score,
+        date: template.quality_score.date
       } : undefined,
-      rejectedReason: apiTemplate.rejected_reason,
-      disabledDate: apiTemplate.disabled_date
+      rejectedReason: template.rejected_reason,
+      disabledDate: template.disabled_date
     };
   }
   handleInstagramTemplateError(error) {
