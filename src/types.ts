@@ -20,6 +20,7 @@ export interface WhatsAppMessageOptions {
   accessToken: string;
   to: string;
   message: string;
+  phoneNumberId?: string;
   metadata?: Record<string, any>;
 }
 
@@ -29,6 +30,7 @@ export interface WhatsAppTemplateOptions {
   templateName: string;
   templateLanguage: string;
   templateComponents?: TemplateComponent[];
+  phoneNumberId?: string;
   metadata?: Record<string, any>;
 }
 
@@ -37,6 +39,7 @@ export interface WhatsAppReplyOptions {
   to: string;
   message: string;
   replyToMessageId: string;
+  phoneNumberId?: string;
   metadata?: Record<string, any>;
 }
 
@@ -45,6 +48,7 @@ export interface WhatsAppReactionOptions {
   to: string;
   messageId: string;
   emoji: string;
+  phoneNumberId?: string;
 }
 
 export interface WhatsAppMediaOptions {
@@ -55,6 +59,7 @@ export interface WhatsAppMediaOptions {
   mediaPath?: string;
   caption?: string;
   filename?: string;
+  phoneNumberId?: string;
   metadata?: Record<string, any>;
 }
 
@@ -62,6 +67,7 @@ export interface WhatsAppEmojiOptions {
   accessToken: string;
   to: string;
   emoji: string;
+  phoneNumberId?: string;
   metadata?: Record<string, any>;
 }
 
@@ -196,6 +202,7 @@ export interface TemplateDeleteOptions {
 
 export interface TemplateListOptions {
   accessToken: string;
+  businessId?: string;
   fields?: string[];
   limit?: number;
   offset?: string;

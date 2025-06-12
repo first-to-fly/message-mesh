@@ -76,7 +76,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken)}/messages`,
+        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -117,7 +117,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken)}/messages`,
+        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -155,7 +155,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken)}/messages`,
+        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -190,7 +190,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken)}/messages`,
+        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -228,7 +228,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken)}/messages`,
+        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -263,7 +263,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken)}/messages`,
+        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -458,7 +458,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
+      const result = (await response.json()) as WhatsAppApiResponse;
 
       if (result.id) {
         return {
@@ -491,7 +491,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
+      const result = (await response.json()) as WhatsAppApiResponse;
 
       if (result.error) {
         return this.handleTemplateError(result);
@@ -518,7 +518,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
+      const result = (await response.json()) as WhatsAppApiResponse;
 
       if (result.error) {
         return this.handleTemplateError(result);
@@ -541,7 +541,10 @@ export class WhatsAppService implements IWhatsAppService {
       if (options.fields) {
         params.append("fields", options.fields.join(","));
       } else {
-        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+        params.append(
+          "fields",
+          "id,name,status,category,language,components,quality_score,rejected_reason"
+        );
       }
 
       const response = await this.httpClient.get(
@@ -552,7 +555,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
+      const result = (await response.json()) as WhatsAppApiResponse;
 
       if (result.id) {
         return {
@@ -572,19 +575,22 @@ export class WhatsAppService implements IWhatsAppService {
       this.validateTemplateListOptions(options);
 
       const params = new URLSearchParams();
-      
+
       if (options.fields) {
         params.append("fields", options.fields.join(","));
       } else {
-        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+        params.append(
+          "fields",
+          "id,name,status,category,language,components,quality_score,rejected_reason"
+        );
       }
-      
+
       if (options.limit) params.append("limit", options.limit.toString());
       if (options.offset) params.append("offset", options.offset);
       if (options.status) params.append("status", options.status);
       if (options.category) params.append("category", options.category);
 
-      const businessId = this.extractBusinessId(options.accessToken);
+      const businessId = this.extractBusinessId(options.accessToken, options.businessId);
       const response = await this.httpClient.get(
         `${WhatsAppService.BASE_URL}/${businessId}/message_templates?${params.toString()}`,
         {
@@ -593,7 +599,7 @@ export class WhatsAppService implements IWhatsAppService {
         "whatsapp"
       );
 
-      const result = await response.json() as WhatsAppApiResponse;
+      const result = (await response.json()) as WhatsAppApiResponse;
 
       if (result.data) {
         return {
@@ -609,14 +615,24 @@ export class WhatsAppService implements IWhatsAppService {
     }
   }
 
-  private extractPhoneNumberId(_accessToken: string): string {
+  private extractPhoneNumberId(_accessToken: string, phoneNumberId?: string): string {
+    // Use provided phoneNumberId if available, otherwise fall back to placeholder
+    if (phoneNumberId) {
+      return phoneNumberId;
+    }
+
     // This is a placeholder - in a real implementation, you would need to
     // extract the phone number ID from the access token or require it as a parameter
     // For now, we'll use a placeholder that developers need to replace
     return "PHONE_NUMBER_ID";
   }
 
-  private extractBusinessId(_accessToken: string): string {
+  private extractBusinessId(_accessToken: string, businessId?: string): string {
+    // Use provided businessId if available, otherwise fall back to placeholder
+    if (businessId) {
+      return businessId;
+    }
+
     // This is a placeholder - in a real implementation, you would need to
     // extract the business ID from the access token or require it as a parameter
     // For now, we'll use a placeholder that developers need to replace
@@ -631,13 +647,25 @@ export class WhatsAppService implements IWhatsAppService {
       throw new MessageMeshError("INVALID_TEMPLATE_NAME", "whatsapp", "Template name is required");
     }
     if (!options.category) {
-      throw new MessageMeshError("INVALID_TEMPLATE_CATEGORY", "whatsapp", "Template category is required");
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_CATEGORY",
+        "whatsapp",
+        "Template category is required"
+      );
     }
     if (!options.language) {
-      throw new MessageMeshError("INVALID_TEMPLATE_LANGUAGE", "whatsapp", "Template language is required");
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_LANGUAGE",
+        "whatsapp",
+        "Template language is required"
+      );
     }
     if (!options.components || options.components.length === 0) {
-      throw new MessageMeshError("INVALID_TEMPLATE_COMPONENTS", "whatsapp", "Template components are required");
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_COMPONENTS",
+        "whatsapp",
+        "Template components are required"
+      );
     }
   }
 
@@ -687,10 +715,12 @@ export class WhatsAppService implements IWhatsAppService {
       components: apiTemplate.components,
       createdTime: apiTemplate.created_time,
       modifiedTime: apiTemplate.modified_time,
-      qualityScore: apiTemplate.quality_score ? {
-        score: apiTemplate.quality_score.score,
-        date: apiTemplate.quality_score.date,
-      } : undefined,
+      qualityScore: apiTemplate.quality_score
+        ? {
+            score: apiTemplate.quality_score.score,
+            date: apiTemplate.quality_score.date,
+          }
+        : undefined,
       rejectedReason: apiTemplate.rejected_reason,
       disabledDate: apiTemplate.disabled_date,
     };
