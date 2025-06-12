@@ -65,9 +65,7 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {
-    "message-mesh": "github:first-to-fly/message-mesh"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "internal"
