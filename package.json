@@ -1,11 +1,23 @@
 {
   "name": "message-mesh",
   "version": "0.1.0",
-  "description": "Unified messaging SDK for Node.js/Bun applications that provides a simple, consistent interface for sending messages across multiple social media platforms",
+  "author": "Internal CRM Team",
+  "repository": {
+    "type": "git",
+    "url": "internal"
+  },
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
+    "eslint": "^9.17.0",
+    "prettier": "^3.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,9 +25,31 @@
       "default": "./dist/index.js"
     }
   },
+  "bugs": {
+    "url": "internal"
+  },
+  "description": "Unified messaging SDK for Node.js/Bun applications that provides a simple, consistent interface for sending messages across multiple social media platforms",
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
   "files": [
     "dist"
   ],
+  "homepage": "internal",
+  "keywords": [
+    "messaging",
+    "whatsapp",
+    "messenger",
+    "instagram",
+    "social-media",
+    "api",
+    "sdk",
+    "bun",
+    "nodejs",
+    "typescript"
+  ],
+  "license": "MIT",
   "scripts": {
     "build": "bun run build:js && bun run build:types",
     "build:js": "bun build ./src/index.ts --outdir=dist --target=bun --splitting",
@@ -37,43 +71,6 @@
     "size-check": "bun run build && du -sh dist/*",
     "validate": "bun run ci && bun run size-check"
   },
-  "keywords": [
-    "messaging",
-    "whatsapp",
-    "messenger",
-    "instagram",
-    "social-media",
-    "api",
-    "sdk",
-    "bun",
-    "nodejs",
-    "typescript"
-  ],
-  "author": "Internal CRM Team",
-  "license": "MIT",
-  "engines": {
-    "bun": ">=1.0.0",
-    "node": ">=18.0.0"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "^8.33.0",
-    "@typescript-eslint/parser": "^8.33.0",
-    "eslint": "^9.17.0",
-    "prettier": "^3.3.3"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "message-mesh": "git+ssh://git@github.com/first-to-fly/message-mesh.git#8616357"
-  },
-  "repository": {
-    "type": "git",
-    "url": "internal"
-  },
-  "bugs": {
-    "url": "internal"
-  },
-  "homepage": "internal"
+  "type": "module",
+  "types": "dist/index.d.ts"
 }
