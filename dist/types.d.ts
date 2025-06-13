@@ -181,6 +181,7 @@ export interface TemplateDeleteOptions {
 export interface TemplateListOptions {
     accessToken: string;
     businessId?: string;
+    phoneNumberId?: string;
     fields?: string[];
     limit?: number;
     offset?: string;
