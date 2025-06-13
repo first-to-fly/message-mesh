@@ -687,6 +687,7 @@ class WhatsAppService {
   }
   async sendMessage(options) {
     try {
+      console.log(`[MessageMesh] WhatsApp sendMessage called with phoneNumberId: "${options.phoneNumberId}", to: ${options.to}`);
       this.validateMessageOptions(options);
       const payload = {
         messaging_product: "whatsapp",
@@ -697,7 +698,10 @@ class WhatsAppService {
         },
         ...options.metadata && { metadata: options.metadata }
       };
-      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`, JSON.stringify(payload), {
+      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
+      console.log(`[MessageMesh] sendMessage - Constructed WhatsApp API URL: ${url}`);
+      const response = await this.httpClient.post(url, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
         "Content-Type": "application/json"
       }, "whatsapp");
@@ -712,6 +716,7 @@ class WhatsAppService {
   }
   async sendTemplate(options) {
     try {
+      console.log(`[MessageMesh] WhatsApp sendTemplate called with phoneNumberId: "${options.phoneNumberId}", templateName: ${options.templateName}, to: ${options.to}`);
       this.validateTemplateOptions(options);
       const payload = {
         messaging_product: "whatsapp",
@@ -728,7 +733,10 @@ class WhatsAppService {
         },
         ...options.metadata && { metadata: options.metadata }
       };
-      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`, JSON.stringify(payload), {
+      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
+      console.log(`[MessageMesh] sendTemplate - Constructed WhatsApp API URL: ${url}`);
+      const response = await this.httpClient.post(url, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
         "Content-Type": "application/json"
       }, "whatsapp");
@@ -743,6 +751,7 @@ class WhatsAppService {
   }
   async replyMessage(options) {
     try {
+      console.log(`[MessageMesh] WhatsApp replyMessage called with phoneNumberId: "${options.phoneNumberId}", replyToMessageId: ${options.replyToMessageId}, to: ${options.to}`);
       this.validateReplyOptions(options);
       const payload = {
         messaging_product: "whatsapp",
@@ -1064,9 +1073,12 @@ class WhatsAppService {
     }
   }
   extractPhoneNumberId(_accessToken, phoneNumberId) {
+    console.log(`[MessageMesh] extractPhoneNumberId called with phoneNumberId: "${phoneNumberId}" (type: ${typeof phoneNumberId})`);
     if (phoneNumberId) {
+      console.log(`[MessageMesh] Using provided phoneNumberId: "${phoneNumberId}"`);
       return phoneNumberId;
     }
+    console.log(`[MessageMesh] WARNING: No phoneNumberId provided, falling back to placeholder "PHONE_NUMBER_ID"`);
     return "PHONE_NUMBER_ID";
   }
   extractBusinessId(_accessToken, businessId) {

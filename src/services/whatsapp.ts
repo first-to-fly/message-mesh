@@ -64,6 +64,7 @@ export class WhatsAppService implements IWhatsAppService {
 
   async sendMessage(options: WhatsAppMessageOptions): Promise<SendMessageResponse> {
     try {
+      console.log(`[MessageMesh] WhatsApp sendMessage called with phoneNumberId: "${options.phoneNumberId}", to: ${options.to}`);
       this.validateMessageOptions(options);
 
       const payload = {
@@ -76,8 +77,12 @@ export class WhatsAppService implements IWhatsAppService {
         ...(options.metadata && { metadata: options.metadata }),
       };
 
+      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
+      console.log(`[MessageMesh] sendMessage - Constructed WhatsApp API URL: ${url}`);
+      
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
+        url,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -99,6 +104,7 @@ export class WhatsAppService implements IWhatsAppService {
 
   async sendTemplate(options: WhatsAppTemplateOptions): Promise<SendMessageResponse> {
     try {
+      console.log(`[MessageMesh] WhatsApp sendTemplate called with phoneNumberId: "${options.phoneNumberId}", templateName: ${options.templateName}, to: ${options.to}`);
       this.validateTemplateOptions(options);
 
       const payload = {
@@ -117,8 +123,12 @@ export class WhatsAppService implements IWhatsAppService {
         ...(options.metadata && { metadata: options.metadata }),
       };
 
+      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
+      console.log(`[MessageMesh] sendTemplate - Constructed WhatsApp API URL: ${url}`);
+      
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
+        url,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -140,6 +150,7 @@ export class WhatsAppService implements IWhatsAppService {
 
   async replyMessage(options: WhatsAppReplyOptions): Promise<SendMessageResponse> {
     try {
+      console.log(`[MessageMesh] WhatsApp replyMessage called with phoneNumberId: "${options.phoneNumberId}", replyToMessageId: ${options.replyToMessageId}, to: ${options.to}`);
       this.validateReplyOptions(options);
 
       const payload = {
@@ -617,14 +628,18 @@ export class WhatsAppService implements IWhatsAppService {
   }
 
   private extractPhoneNumberId(_accessToken: string, phoneNumberId?: string): string {
+    console.log(`[MessageMesh] extractPhoneNumberId called with phoneNumberId: "${phoneNumberId}" (type: ${typeof phoneNumberId})`);
+    
     // Use provided phoneNumberId if available, otherwise fall back to placeholder
     if (phoneNumberId) {
+      console.log(`[MessageMesh] Using provided phoneNumberId: "${phoneNumberId}"`);
       return phoneNumberId;
     }
 
     // This is a placeholder - in a real implementation, you would need to
     // extract the phone number ID from the access token or require it as a parameter
     // For now, we'll use a placeholder that developers need to replace
+    console.log(`[MessageMesh] WARNING: No phoneNumberId provided, falling back to placeholder "PHONE_NUMBER_ID"`);
     return "PHONE_NUMBER_ID";
   }
 
