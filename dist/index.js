@@ -698,7 +698,7 @@ class WhatsAppService {
         },
         ...options.metadata && { metadata: options.metadata }
       };
-      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const phoneNumberId = options.phoneNumberId;
       const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
       console.log(`[MessageMesh] sendMessage - Constructed WhatsApp API URL: ${url}`);
       const response = await this.httpClient.post(url, JSON.stringify(payload), {
@@ -733,7 +733,7 @@ class WhatsAppService {
         },
         ...options.metadata && { metadata: options.metadata }
       };
-      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const phoneNumberId = options.phoneNumberId;
       const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
       console.log(`[MessageMesh] sendTemplate - Constructed WhatsApp API URL: ${url}`);
       const response = await this.httpClient.post(url, JSON.stringify(payload), {
@@ -765,7 +765,7 @@ class WhatsAppService {
         },
         ...options.metadata && { metadata: options.metadata }
       };
-      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`, JSON.stringify(payload), {
+      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
         "Content-Type": "application/json"
       }, "whatsapp");
@@ -790,7 +790,7 @@ class WhatsAppService {
           emoji: options.emoji
         }
       };
-      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`, JSON.stringify(payload), {
+      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
         "Content-Type": "application/json"
       }, "whatsapp");
@@ -818,7 +818,7 @@ class WhatsAppService {
         },
         ...options.metadata && { metadata: options.metadata }
       };
-      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`, JSON.stringify(payload), {
+      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
         "Content-Type": "application/json"
       }, "whatsapp");
@@ -843,7 +843,7 @@ class WhatsAppService {
         },
         ...options.metadata && { metadata: options.metadata }
       };
-      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`, JSON.stringify(payload), {
+      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
         "Content-Type": "application/json"
       }, "whatsapp");
@@ -1072,15 +1072,6 @@ class WhatsAppService {
       return this.handleTemplateListError(error);
     }
   }
-  extractPhoneNumberId(_accessToken, phoneNumberId) {
-    console.log(`[MessageMesh] extractPhoneNumberId called with phoneNumberId: "${phoneNumberId}" (type: ${typeof phoneNumberId})`);
-    if (phoneNumberId) {
-      console.log(`[MessageMesh] Using provided phoneNumberId: "${phoneNumberId}"`);
-      return phoneNumberId;
-    }
-    console.log(`[MessageMesh] WARNING: No phoneNumberId provided, falling back to placeholder "PHONE_NUMBER_ID"`);
-    return "PHONE_NUMBER_ID";
-  }
   extractBusinessId(_accessToken, businessId) {
     if (businessId) {
       return businessId;
@@ -1190,6 +1181,78 @@ class WhatsAppService {
       success: false,
       error: {
         code: "TEMPLATE_LIST_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "whatsapp"
+      }
+    };
+  }
+  async getPhoneNumbers(options) {
+    try {
+      this.validatePhoneNumberListOptions(options);
+      const params = new URLSearchParams;
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append("fields", "id,display_phone_number,verified_name,code_verification_status,status,quality_rating,platform,throughput,webhook_configuration");
+      }
+      if (options.limit)
+        params.append("limit", options.limit.toString());
+      const businessId = this.extractBusinessId(options.accessToken, options.businessId);
+      const response = await this.httpClient.get(`${WhatsAppService.BASE_URL}/${businessId}/phone_numbers?${params.toString()}`, {
+        Authorization: `Bearer ${options.accessToken}`
+      }, "whatsapp");
+      const result = await response.json();
+      if (result.data) {
+        return {
+          success: true,
+          phoneNumbers: result.data.map((phoneNumber) => this.formatPhoneNumber(phoneNumber)),
+          paging: result.paging
+        };
+      }
+      return this.handlePhoneNumberListError(result);
+    } catch (error) {
+      return this.handlePhoneNumberListError(error);
+    }
+  }
+  validatePhoneNumberListOptions(options) {
+    SecurityUtils.validateAccessToken(options.accessToken, "whatsapp");
+    if (options.limit && (options.limit < 1 || options.limit > 100)) {
+      throw new MessageMeshError("INVALID_LIMIT", "whatsapp", "Limit must be between 1 and 100");
+    }
+  }
+  formatPhoneNumber(phoneNumber) {
+    return {
+      id: phoneNumber.id,
+      displayPhoneNumber: phoneNumber.display_phone_number,
+      verifiedName: phoneNumber.verified_name,
+      codeVerificationStatus: phoneNumber.code_verification_status,
+      status: phoneNumber.status,
+      qualityRating: phoneNumber.quality_rating,
+      platform: phoneNumber.platform,
+      throughput: phoneNumber.throughput ? {
+        level: phoneNumber.throughput.level
+      } : undefined,
+      webhookConfiguration: phoneNumber.webhook_configuration ? {
+        application: phoneNumber.webhook_configuration.application,
+        webhookUrl: phoneNumber.webhook_configuration.webhook_url
+      } : undefined
+    };
+  }
+  handlePhoneNumberListError(error) {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform
+        }
+      };
+    }
+    return {
+      success: false,
+      error: {
+        code: "PHONE_NUMBER_LIST_ERROR",
         message: error instanceof Error ? error.message : "An unknown error occurred",
         platform: "whatsapp"
       }
@@ -3125,12 +3188,24 @@ class MessageMesh {
     for (const platform of platforms) {
       const accessToken = options.accessTokens[platform];
       const recipient = options.to[platform];
+      const phoneNumberId = options.phoneNumberIds?.[platform];
       if (!accessToken || !recipient) {
         results[platform] = {
           success: false,
           error: {
             code: "MISSING_CREDENTIALS",
             message: `Missing access token or recipient for ${platform}`,
+            platform
+          }
+        };
+        continue;
+      }
+      if (platform === "whatsapp" && !phoneNumberId) {
+        results[platform] = {
+          success: false,
+          error: {
+            code: "MISSING_PHONE_NUMBER_ID",
+            message: "phoneNumberId is required for WhatsApp messaging",
             platform
           }
         };
@@ -3166,6 +3241,7 @@ class MessageMesh {
               accessToken,
               to: recipient,
               message: options.message,
+              phoneNumberId,
               metadata: options.metadata
             });
             break;

@@ -1,4 +1,4 @@
-import type { SendMessageResponse, WhatsAppMessageOptions, WhatsAppTemplateOptions, WhatsAppReplyOptions, WhatsAppReactionOptions, WhatsAppMediaOptions, WhatsAppEmojiOptions, MessengerMessageOptions, MessengerMediaOptions, MessengerTemplateOptions, MessengerReplyOptions, InstagramMessageOptions, InstagramMediaOptions, InstagramReplyOptions, TemplateCreateOptions, TemplateUpdateOptions, TemplateDeleteOptions, TemplateListOptions, TemplateStatusOptions, TemplateResponse, TemplateListResponse, MessengerTemplateCreateOptions, MessengerTemplateUpdateOptions, MessengerTemplateDeleteOptions, MessengerTemplateListOptions, MessengerTemplateStatusOptions, MessengerTemplateResponse, MessengerTemplateListResponse, InstagramTemplateCreateOptions, InstagramTemplateUpdateOptions, InstagramTemplateDeleteOptions, InstagramTemplateListOptions, InstagramTemplateStatusOptions, InstagramTemplateResponse, InstagramTemplateListResponse } from "./types.js";
+import type { SendMessageResponse, WhatsAppMessageOptions, WhatsAppTemplateOptions, WhatsAppReplyOptions, WhatsAppReactionOptions, WhatsAppMediaOptions, WhatsAppEmojiOptions, MessengerMessageOptions, MessengerMediaOptions, MessengerTemplateOptions, MessengerReplyOptions, InstagramMessageOptions, InstagramMediaOptions, InstagramReplyOptions, TemplateCreateOptions, TemplateUpdateOptions, TemplateDeleteOptions, TemplateListOptions, TemplateStatusOptions, TemplateResponse, TemplateListResponse, MessengerTemplateCreateOptions, MessengerTemplateUpdateOptions, MessengerTemplateDeleteOptions, MessengerTemplateListOptions, MessengerTemplateStatusOptions, MessengerTemplateResponse, MessengerTemplateListResponse, InstagramTemplateCreateOptions, InstagramTemplateUpdateOptions, InstagramTemplateDeleteOptions, InstagramTemplateListOptions, InstagramTemplateStatusOptions, InstagramTemplateResponse, InstagramTemplateListResponse, PhoneNumberListOptions, PhoneNumberListResponse } from "./types.js";
 export interface IPlatformService {
     validateAccessToken(accessToken: string): Promise<boolean>;
 }
@@ -14,6 +14,7 @@ export interface IWhatsAppService extends IPlatformService {
     deleteTemplate(options: TemplateDeleteOptions): Promise<TemplateResponse>;
     getTemplate(options: TemplateStatusOptions): Promise<TemplateResponse>;
     listTemplates(options: TemplateListOptions): Promise<TemplateListResponse>;
+    getPhoneNumbers(options: PhoneNumberListOptions): Promise<PhoneNumberListResponse>;
 }
 export interface IMessengerService extends IPlatformService {
     sendMessage(options: MessengerMessageOptions): Promise<SendMessageResponse>;

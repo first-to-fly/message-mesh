@@ -20,7 +20,7 @@ export interface WhatsAppMessageOptions {
   accessToken: string;
   to: string;
   message: string;
-  phoneNumberId?: string;
+  phoneNumberId: string;
   metadata?: Record<string, any>;
 }
 
@@ -30,7 +30,7 @@ export interface WhatsAppTemplateOptions {
   templateName: string;
   templateLanguage: string;
   templateComponents?: TemplateComponent[];
-  phoneNumberId?: string;
+  phoneNumberId: string;
   metadata?: Record<string, any>;
 }
 
@@ -39,7 +39,7 @@ export interface WhatsAppReplyOptions {
   to: string;
   message: string;
   replyToMessageId: string;
-  phoneNumberId?: string;
+  phoneNumberId: string;
   metadata?: Record<string, any>;
 }
 
@@ -48,7 +48,7 @@ export interface WhatsAppReactionOptions {
   to: string;
   messageId: string;
   emoji: string;
-  phoneNumberId?: string;
+  phoneNumberId: string;
 }
 
 export interface WhatsAppMediaOptions {
@@ -59,7 +59,7 @@ export interface WhatsAppMediaOptions {
   mediaPath?: string;
   caption?: string;
   filename?: string;
-  phoneNumberId?: string;
+  phoneNumberId: string;
   metadata?: Record<string, any>;
 }
 
@@ -67,7 +67,7 @@ export interface WhatsAppEmojiOptions {
   accessToken: string;
   to: string;
   emoji: string;
-  phoneNumberId?: string;
+  phoneNumberId: string;
   metadata?: Record<string, any>;
 }
 
@@ -521,6 +521,49 @@ export interface InstagramAPIResponse {
     code: number;
     error_subcode?: number;
     fbtrace_id?: string;
+  };
+}
+
+// Phone Number Management Types
+export interface PhoneNumberListOptions {
+  accessToken: string;
+  businessId?: string;
+  fields?: string[];
+  limit?: number;
+}
+
+export interface PhoneNumber {
+  id: string;
+  displayPhoneNumber: string;
+  verifiedName: string;
+  codeVerificationStatus: "VERIFIED" | "UNVERIFIED";
+  status: "CONNECTED" | "DISCONNECTED" | "MIGRATED" | "PENDING" | "DELETED";
+  qualityRating: "GREEN" | "YELLOW" | "RED" | "UNKNOWN";
+  platform: "WHATSAPP" | "INSTAGRAM";
+  throughput?: {
+    level: "STANDARD" | "HIGH_VOLUME";
+  };
+  webhookConfiguration?: {
+    application: string;
+    webhookUrl: string;
+  };
+}
+
+export interface PhoneNumberListResponse {
+  success: boolean;
+  phoneNumbers?: PhoneNumber[];
+  paging?: {
+    cursors?: {
+      before?: string;
+      after?: string;
+    };
+    next?: string;
+    previous?: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+    platform: "whatsapp" | "messenger" | "instagram";
   };
 }
 

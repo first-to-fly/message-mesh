@@ -16,6 +16,9 @@ import type {
   TemplateListResponse,
   Template,
   TemplateComponent,
+  PhoneNumberListOptions,
+  PhoneNumberListResponse,
+  PhoneNumber,
 } from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
@@ -64,7 +67,9 @@ export class WhatsAppService implements IWhatsAppService {
 
   async sendMessage(options: WhatsAppMessageOptions): Promise<SendMessageResponse> {
     try {
-      console.log(`[MessageMesh] WhatsApp sendMessage called with phoneNumberId: "${options.phoneNumberId}", to: ${options.to}`);
+      console.log(
+        `[MessageMesh] WhatsApp sendMessage called with phoneNumberId: "${options.phoneNumberId}", to: ${options.to}`
+      );
       this.validateMessageOptions(options);
 
       const payload = {
@@ -77,10 +82,10 @@ export class WhatsAppService implements IWhatsAppService {
         ...(options.metadata && { metadata: options.metadata }),
       };
 
-      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const phoneNumberId = options.phoneNumberId;
       const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
       console.log(`[MessageMesh] sendMessage - Constructed WhatsApp API URL: ${url}`);
-      
+
       const response = await this.httpClient.post(
         url,
         JSON.stringify(payload),
@@ -104,7 +109,9 @@ export class WhatsAppService implements IWhatsAppService {
 
   async sendTemplate(options: WhatsAppTemplateOptions): Promise<SendMessageResponse> {
     try {
-      console.log(`[MessageMesh] WhatsApp sendTemplate called with phoneNumberId: "${options.phoneNumberId}", templateName: ${options.templateName}, to: ${options.to}`);
+      console.log(
+        `[MessageMesh] WhatsApp sendTemplate called with phoneNumberId: "${options.phoneNumberId}", templateName: ${options.templateName}, to: ${options.to}`
+      );
       this.validateTemplateOptions(options);
 
       const payload = {
@@ -123,10 +130,10 @@ export class WhatsAppService implements IWhatsAppService {
         ...(options.metadata && { metadata: options.metadata }),
       };
 
-      const phoneNumberId = this.extractPhoneNumberId(options.accessToken, options.phoneNumberId);
+      const phoneNumberId = options.phoneNumberId;
       const url = `${WhatsAppService.BASE_URL}/${phoneNumberId}/messages`;
       console.log(`[MessageMesh] sendTemplate - Constructed WhatsApp API URL: ${url}`);
-      
+
       const response = await this.httpClient.post(
         url,
         JSON.stringify(payload),
@@ -150,7 +157,9 @@ export class WhatsAppService implements IWhatsAppService {
 
   async replyMessage(options: WhatsAppReplyOptions): Promise<SendMessageResponse> {
     try {
-      console.log(`[MessageMesh] WhatsApp replyMessage called with phoneNumberId: "${options.phoneNumberId}", replyToMessageId: ${options.replyToMessageId}, to: ${options.to}`);
+      console.log(
+        `[MessageMesh] WhatsApp replyMessage called with phoneNumberId: "${options.phoneNumberId}", replyToMessageId: ${options.replyToMessageId}, to: ${options.to}`
+      );
       this.validateReplyOptions(options);
 
       const payload = {
@@ -167,7 +176,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
+        `${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -202,7 +211,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
+        `${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -240,7 +249,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
+        `${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -275,7 +284,7 @@ export class WhatsAppService implements IWhatsAppService {
       };
 
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${this.extractPhoneNumberId(options.accessToken, options.phoneNumberId)}/messages`,
+        `${WhatsAppService.BASE_URL}/${options.phoneNumberId}/messages`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -616,7 +625,9 @@ export class WhatsAppService implements IWhatsAppService {
       if (result.data) {
         return {
           success: true,
-          templates: result.data.map((template: unknown) => this.formatTemplate(template as Record<string, unknown>)),
+          templates: result.data.map((template: unknown) =>
+            this.formatTemplate(template as Record<string, unknown>)
+          ),
           paging: result.paging,
         };
       }
@@ -627,21 +638,6 @@ export class WhatsAppService implements IWhatsAppService {
     }
   }
 
-  private extractPhoneNumberId(_accessToken: string, phoneNumberId?: string): string {
-    console.log(`[MessageMesh] extractPhoneNumberId called with phoneNumberId: "${phoneNumberId}" (type: ${typeof phoneNumberId})`);
-    
-    // Use provided phoneNumberId if available, otherwise fall back to placeholder
-    if (phoneNumberId) {
-      console.log(`[MessageMesh] Using provided phoneNumberId: "${phoneNumberId}"`);
-      return phoneNumberId;
-    }
-
-    // This is a placeholder - in a real implementation, you would need to
-    // extract the phone number ID from the access token or require it as a parameter
-    // For now, we'll use a placeholder that developers need to replace
-    console.log(`[MessageMesh] WARNING: No phoneNumberId provided, falling back to placeholder "PHONE_NUMBER_ID"`);
-    return "PHONE_NUMBER_ID";
-  }
 
   private extractBusinessId(_accessToken: string, businessId?: string): string {
     // Use provided businessId if available, otherwise fall back to placeholder
@@ -738,7 +734,7 @@ export class WhatsAppService implements IWhatsAppService {
       rejected_reason?: string;
       disabled_date?: string;
     };
-    
+
     return {
       id: template.id,
       name: template.name,
@@ -797,6 +793,105 @@ export class WhatsAppService implements IWhatsAppService {
       success: false,
       error: {
         code: "TEMPLATE_LIST_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "whatsapp",
+      },
+    };
+  }
+
+  // Phone Number Management Methods
+
+  async getPhoneNumbers(options: PhoneNumberListOptions): Promise<PhoneNumberListResponse> {
+    try {
+      this.validatePhoneNumberListOptions(options);
+
+      const params = new URLSearchParams();
+
+      if (options.fields) {
+        params.append("fields", options.fields.join(","));
+      } else {
+        params.append(
+          "fields",
+          "id,display_phone_number,verified_name,code_verification_status,status,quality_rating,platform,throughput,webhook_configuration"
+        );
+      }
+
+      if (options.limit) params.append("limit", options.limit.toString());
+
+      const businessId = this.extractBusinessId(options.accessToken, options.businessId);
+      const response = await this.httpClient.get(
+        `${WhatsAppService.BASE_URL}/${businessId}/phone_numbers?${params.toString()}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "whatsapp"
+      );
+
+      const result = (await response.json()) as WhatsAppApiResponse;
+
+      if (result.data) {
+        return {
+          success: true,
+          phoneNumbers: result.data.map((phoneNumber: unknown) =>
+            this.formatPhoneNumber(phoneNumber as Record<string, unknown>)
+          ),
+          paging: result.paging,
+        };
+      }
+
+      return this.handlePhoneNumberListError(result);
+    } catch (error) {
+      return this.handlePhoneNumberListError(error);
+    }
+  }
+
+  private validatePhoneNumberListOptions(options: PhoneNumberListOptions): void {
+    SecurityUtils.validateAccessToken(options.accessToken, "whatsapp");
+
+    if (options.limit && (options.limit < 1 || options.limit > 100)) {
+      throw new MessageMeshError(
+        "INVALID_LIMIT",
+        "whatsapp",
+        "Limit must be between 1 and 100"
+      );
+    }
+  }
+
+  private formatPhoneNumber(phoneNumber: Record<string, unknown>): PhoneNumber {
+    return {
+      id: phoneNumber.id as string,
+      displayPhoneNumber: phoneNumber.display_phone_number as string,
+      verifiedName: phoneNumber.verified_name as string,
+      codeVerificationStatus: phoneNumber.code_verification_status as "VERIFIED" | "UNVERIFIED",
+      status: phoneNumber.status as "CONNECTED" | "DISCONNECTED" | "MIGRATED" | "PENDING" | "DELETED",
+      qualityRating: phoneNumber.quality_rating as "GREEN" | "YELLOW" | "RED" | "UNKNOWN",
+      platform: phoneNumber.platform as "WHATSAPP" | "INSTAGRAM",
+      throughput: phoneNumber.throughput ? {
+        level: (phoneNumber.throughput as Record<string, unknown>).level as "STANDARD" | "HIGH_VOLUME"
+      } : undefined,
+      webhookConfiguration: phoneNumber.webhook_configuration ? {
+        application: (phoneNumber.webhook_configuration as Record<string, unknown>).application as string,
+        webhookUrl: (phoneNumber.webhook_configuration as Record<string, unknown>).webhook_url as string,
+      } : undefined,
+    };
+  }
+
+  private handlePhoneNumberListError(error: unknown): PhoneNumberListResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: error.platform,
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "PHONE_NUMBER_LIST_ERROR",
         message: error instanceof Error ? error.message : "An unknown error occurred",
         platform: "whatsapp",
       },

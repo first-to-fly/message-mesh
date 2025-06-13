@@ -71,6 +71,7 @@ export declare class MessageMesh {
         accessTokens: Partial<Record<Platform, string>>;
         to: Partial<Record<Platform, string>>;
         message: string;
+        phoneNumberIds?: Partial<Record<Platform, string>>;
         preferredPlatforms?: Platform[];
         fallbackToAnyPlatform?: boolean;
         metadata?: Record<string, any>;

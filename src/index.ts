@@ -19,6 +19,9 @@ export type {
   InstagramReplyOptions,
   TemplateComponent,
   TemplateParameter,
+  PhoneNumberListOptions,
+  PhoneNumberListResponse,
+  PhoneNumber,
 } from "./types.js";
 export type {
   IPlatformService,

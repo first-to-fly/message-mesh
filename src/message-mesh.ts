@@ -140,6 +140,7 @@ export class MessageMesh {
     accessTokens: Partial<Record<Platform, string>>;
     to: Partial<Record<Platform, string>>;
     message: string;
+    phoneNumberIds?: Partial<Record<Platform, string>>;
     preferredPlatforms?: Platform[];
     fallbackToAnyPlatform?: boolean;
     metadata?: Record<string, any>;
@@ -150,6 +151,7 @@ export class MessageMesh {
     for (const platform of platforms) {
       const accessToken = options.accessTokens[platform];
       const recipient = options.to[platform];
+      const phoneNumberId = options.phoneNumberIds?.[platform];
 
       if (!accessToken || !recipient) {
         results[platform] = {
@@ -157,6 +159,19 @@ export class MessageMesh {
           error: {
             code: "MISSING_CREDENTIALS",
             message: `Missing access token or recipient for ${platform}`,
+            platform,
+          },
+        };
+        continue;
+      }
+
+      // For WhatsApp, phoneNumberId is required
+      if (platform === "whatsapp" && !phoneNumberId) {
+        results[platform] = {
+          success: false,
+          error: {
+            code: "MISSING_PHONE_NUMBER_ID",
+            message: "phoneNumberId is required for WhatsApp messaging",
             platform,
           },
         };
@@ -198,6 +213,7 @@ export class MessageMesh {
               accessToken,
               to: recipient,
               message: options.message,
+              phoneNumberId: phoneNumberId!,
               metadata: options.metadata,
             });
             break;

@@ -26,7 +26,11 @@ const accessToken = "EAAxxxxxxxxxxxxx"; // Your WhatsApp Business API token
 ```
 
 ### 3. Phone Number ID
-Extract from Meta Business Manager or API response.
+**Required for all WhatsApp operations.** Get from Meta Business Manager or use `getPhoneNumbers()` method.
+
+```typescript
+const phoneNumberId = "1234567890123456"; // Your WhatsApp Business phone number ID
+```
 
 ## 📱 Basic Text Messages
 
@@ -35,6 +39,7 @@ Send simple text messages with optional metadata:
 ```typescript
 const result = await messageMesh.whatsapp.sendMessage({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id", // Required
   to: "+1234567890",        // E.164 format required
   message: "Hello from WhatsApp!",
   metadata: {               // Optional metadata
@@ -67,6 +72,7 @@ Send pre-approved template messages with dynamic parameters:
 ```typescript
 await messageMesh.whatsapp.sendTemplate({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   templateName: "welcome_message",
   templateLanguage: "en",
@@ -86,7 +92,8 @@ await messageMesh.whatsapp.sendTemplate({
 
 ```typescript
 await messageMesh.whatsapp.sendTemplate({
-  accessToken: "your-token", 
+  accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   templateName: "order_confirmation",
   templateLanguage: "en",
@@ -135,6 +142,7 @@ Reply to specific messages with context:
 ```typescript
 await messageMesh.whatsapp.replyMessage({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   message: "Thanks for your question! Let me help you with that.",
   replyToMessageId: "wamid.xxxxxxxxxxxxx", // Original message ID
@@ -159,6 +167,7 @@ React to messages with emojis:
 ```typescript
 await messageMesh.whatsapp.sendReaction({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890", 
   messageId: "wamid.xxxxxxxxxxxxx", // Message to react to
   emoji: "👍"                       // Single emoji only
@@ -178,6 +187,7 @@ Any single Unicode emoji:
 // Send empty emoji to remove reaction
 await messageMesh.whatsapp.sendReaction({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   messageId: "wamid.xxxxxxxxxxxxx",
   emoji: "" // Empty string removes reaction
@@ -193,6 +203,7 @@ Send images, videos, audio, and documents:
 ```typescript
 await messageMesh.whatsapp.sendMedia({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   mediaType: "image",
   mediaUrl: "https://example.com/image.jpg",
@@ -205,6 +216,7 @@ await messageMesh.whatsapp.sendMedia({
 ```typescript
 await messageMesh.whatsapp.sendMedia({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890", 
   mediaType: "video",
   mediaUrl: "https://example.com/video.mp4",
@@ -217,6 +229,7 @@ await messageMesh.whatsapp.sendMedia({
 ```typescript
 await messageMesh.whatsapp.sendMedia({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   mediaType: "audio",
   mediaUrl: "https://example.com/audio.mp3"
@@ -229,6 +242,7 @@ await messageMesh.whatsapp.sendMedia({
 ```typescript
 await messageMesh.whatsapp.sendMedia({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   mediaType: "document",
   mediaUrl: "https://example.com/document.pdf",
@@ -260,6 +274,7 @@ Send standalone emoji messages:
 ```typescript
 await messageMesh.whatsapp.sendEmoji({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   emoji: "🎉",
   metadata: {
@@ -368,6 +383,7 @@ async function sendBulkMessages(recipients: string[], message: string) {
     try {
       const result = await messageMesh.whatsapp.sendMessage({
         accessToken: "your-token",
+        phoneNumberId: "your-phone-number-id",
         to: recipient,
         message,
         metadata: { batch: "bulk-001", timestamp: Date.now() }
@@ -436,6 +452,7 @@ const templateComponents = new WhatsAppTemplateBuilder()
 
 await messageMesh.whatsapp.sendTemplate({
   accessToken: "your-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   templateName: "subscription_reminder",
   templateLanguage: "en",
@@ -456,6 +473,7 @@ async function sendMediaGallery(recipient: string, mediaItems: Array<{
   for (const item of mediaItems) {
     const result = await messageMesh.whatsapp.sendMedia({
       accessToken: "your-token",
+      phoneNumberId: "your-phone-number-id",
       to: recipient,
       mediaType: item.type,
       mediaUrl: item.url,
@@ -504,6 +522,7 @@ const messageTracker = new Map();
 for (const msg of messagesToSend) {
   const result = await messageMesh.whatsapp.sendMessage({
     accessToken: "your-token",
+    phoneNumberId: "your-phone-number-id",
     ...msg
   });
   
@@ -576,6 +595,7 @@ function sendTemplate(type: keyof typeof approvedTemplates, to: string, params: 
   
   return messageMesh.whatsapp.sendTemplate({
     accessToken: "your-token",
+    phoneNumberId: "your-phone-number-id",
     to,
     templateName: template.name,
     templateLanguage: template.language,

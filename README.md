@@ -55,6 +55,7 @@ const messageMesh = new MessageMesh({
 // Send a WhatsApp message
 const result = await messageMesh.whatsapp.sendMessage({
   accessToken: "your-whatsapp-access-token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   message: "Hello from Message-Mesh!",
 });
@@ -104,6 +105,7 @@ if (result.success) {
 // Send text message
 await messageMesh.whatsapp.sendMessage({
   accessToken: "token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   message: "Hello World!",
   metadata: { customField: "value" },
@@ -112,6 +114,7 @@ await messageMesh.whatsapp.sendMessage({
 // Send template message
 await messageMesh.whatsapp.sendTemplate({
   accessToken: "token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   templateName: "welcome_template",
   templateLanguage: "en",
@@ -126,6 +129,7 @@ await messageMesh.whatsapp.sendTemplate({
 // Reply to message
 await messageMesh.whatsapp.replyMessage({
   accessToken: "token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   message: "Thanks for your message!",
   replyToMessageId: "original_message_id",
@@ -134,6 +138,7 @@ await messageMesh.whatsapp.replyMessage({
 // Send reaction
 await messageMesh.whatsapp.sendReaction({
   accessToken: "token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   messageId: "message_id",
   emoji: "👍",
@@ -142,6 +147,7 @@ await messageMesh.whatsapp.sendReaction({
 // Send media
 await messageMesh.whatsapp.sendMedia({
   accessToken: "token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   mediaType: "image",
   mediaUrl: "https://example.com/image.jpg",
@@ -151,6 +157,7 @@ await messageMesh.whatsapp.sendMedia({
 // Send emoji
 await messageMesh.whatsapp.sendEmoji({
   accessToken: "token",
+  phoneNumberId: "your-phone-number-id",
   to: "+1234567890",
   emoji: "🎉",
 });
@@ -462,6 +469,9 @@ const results = await messageMesh.sendUniversalMessage({
     messenger: "messenger-token",
     instagram: "instagram-token",
   },
+  phoneNumberIds: {
+    whatsapp: "your-whatsapp-phone-number-id",
+  },
   to: {
     whatsapp: "+1234567890",
     messenger: "facebook-user-id",
@@ -690,8 +700,10 @@ src/
 
 - Business verification with Meta
 - WhatsApp Business API access token
-- Phone number ID from Meta Business Manager
+- **Phone number ID from Meta Business Manager** (required for all operations)
 - Templates must be pre-approved for production
+
+> **Important**: All WhatsApp operations require a `phoneNumberId` parameter. You can obtain this from the Meta Business Manager or by calling the `getPhoneNumbers()` method.
 
 ### Facebook Messenger
 

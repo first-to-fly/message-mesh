@@ -34,6 +34,8 @@ import type {
   InstagramTemplateStatusOptions,
   InstagramTemplateResponse,
   InstagramTemplateListResponse,
+  PhoneNumberListOptions,
+  PhoneNumberListResponse,
 } from "./types.js";
 
 export interface IPlatformService {
@@ -54,6 +56,9 @@ export interface IWhatsAppService extends IPlatformService {
   deleteTemplate(options: TemplateDeleteOptions): Promise<TemplateResponse>;
   getTemplate(options: TemplateStatusOptions): Promise<TemplateResponse>;
   listTemplates(options: TemplateListOptions): Promise<TemplateListResponse>;
+  
+  // Phone Number Management Methods
+  getPhoneNumbers(options: PhoneNumberListOptions): Promise<PhoneNumberListResponse>;
 }
 
 export interface IMessengerService extends IPlatformService {

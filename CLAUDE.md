@@ -50,6 +50,7 @@ The SDK follows a service-oriented architecture with platform-specific implement
 ### Error Handling Strategy
 
 All errors are standardized through `MessageMeshError` class with:
+
 - Platform-specific error codes (INVALID_ACCESS_TOKEN, NETWORK_ERROR, TIMEOUT, etc.)
 - Consistent error response format across all platforms
 - Automatic retry with exponential backoff for transient failures
@@ -60,6 +61,7 @@ All errors are standardized through `MessageMeshError` class with:
 The WhatsApp service provides comprehensive messaging capabilities:
 
 ### Core Features (Fully Implemented)
+
 - **Text Messages**: Basic message sending with metadata support
 - **Template Messages**: WhatsApp-approved templates with parameter substitution
 - **Reply Messages**: Message replies with context linking
@@ -68,14 +70,16 @@ The WhatsApp service provides comprehensive messaging capabilities:
 - **Emoji Messages**: Standalone emoji sending
 
 ### Important Notes
+
 - Uses Facebook Graph API v23.0
 - Requires WhatsApp Business API access token
-- Phone number ID extraction is placeholder (line 342-347 in whatsapp.ts)
+- **Phone number ID is required** for all WhatsApp messaging operations
 - All methods return standardized `SendMessageResponse` format
 
 ## TypeScript Configuration
 
 The project uses strict TypeScript configuration with:
+
 - ESNext target for modern JavaScript features
 - Bundler module resolution for optimal Bun compatibility
 - Strict mode enabled with additional safety checks
@@ -84,6 +88,7 @@ The project uses strict TypeScript configuration with:
 ## Testing Framework
 
 Uses Bun's native test framework:
+
 - Test files follow `*.test.ts` pattern
 - Located in `src/` directory alongside source files
 - Comprehensive test coverage for WhatsApp service functionality
@@ -92,6 +97,7 @@ Uses Bun's native test framework:
 ## Development Status
 
 **Phase 1-3 Complete (WhatsApp):**
+
 - ✅ Core architecture and TypeScript setup
 - ✅ HTTP client with retry logic
 - ✅ Complete WhatsApp Business API integration
@@ -100,6 +106,7 @@ Uses Bun's native test framework:
 - ✅ Test suite and build system
 
 **Phase 4+ Planned:**
+
 - 🚧 Messenger API integration
 - 🚧 Instagram API integration
 - 📋 Performance optimizations
@@ -140,6 +147,7 @@ src/
 ## Usage Patterns
 
 The SDK is designed for internal CRM applications with focus on:
+
 - Type safety with full TypeScript support
 - Consistent error handling across platforms
 - Retry logic for reliable message delivery

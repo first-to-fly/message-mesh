@@ -1,5 +1,5 @@
 import type { IWhatsAppService } from "../interfaces.js";
-import type { SendMessageResponse, WhatsAppMessageOptions, WhatsAppTemplateOptions, WhatsAppReplyOptions, WhatsAppReactionOptions, WhatsAppMediaOptions, WhatsAppEmojiOptions, TemplateCreateOptions, TemplateUpdateOptions, TemplateDeleteOptions, TemplateListOptions, TemplateStatusOptions, TemplateResponse, TemplateListResponse } from "../types.js";
+import type { SendMessageResponse, WhatsAppMessageOptions, WhatsAppTemplateOptions, WhatsAppReplyOptions, WhatsAppReactionOptions, WhatsAppMediaOptions, WhatsAppEmojiOptions, TemplateCreateOptions, TemplateUpdateOptions, TemplateDeleteOptions, TemplateListOptions, TemplateStatusOptions, TemplateResponse, TemplateListResponse, PhoneNumberListOptions, PhoneNumberListResponse } from "../types.js";
 import { HttpClient } from "../http-client.js";
 export declare class WhatsAppService implements IWhatsAppService {
     private httpClient;
@@ -23,7 +23,6 @@ export declare class WhatsAppService implements IWhatsAppService {
     deleteTemplate(options: TemplateDeleteOptions): Promise<TemplateResponse>;
     getTemplate(options: TemplateStatusOptions): Promise<TemplateResponse>;
     listTemplates(options: TemplateListOptions): Promise<TemplateListResponse>;
-    private extractPhoneNumberId;
     private extractBusinessId;
     private validateTemplateCreateOptions;
     private validateTemplateUpdateOptions;
@@ -33,5 +32,9 @@ export declare class WhatsAppService implements IWhatsAppService {
     private formatTemplate;
     private handleTemplateError;
     private handleTemplateListError;
+    getPhoneNumbers(options: PhoneNumberListOptions): Promise<PhoneNumberListResponse>;
+    private validatePhoneNumberListOptions;
+    private formatPhoneNumber;
+    private handlePhoneNumberListError;
     private handleError;
 }
