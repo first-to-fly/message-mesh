@@ -904,8 +904,8 @@ class WhatsAppService {
     if (!options.messageId?.trim()) {
       throw new MessageMeshError("INVALID_MESSAGE_ID", "whatsapp", "Message ID is required");
     }
-    if (!options.emoji?.trim()) {
-      throw new MessageMeshError("INVALID_EMOJI", "whatsapp", "Emoji is required");
+    if (options.emoji === undefined || options.emoji === null) {
+      throw new MessageMeshError("INVALID_EMOJI", "whatsapp", "Emoji parameter is required (use empty string to remove reactions)");
     }
   }
   validateMediaOptions(options) {
