@@ -532,8 +532,9 @@ export class WhatsAppService implements IWhatsAppService {
     try {
       this.validateTemplateDeleteOptions(options);
 
+      // WhatsApp API expects: DELETE /{whatsapp-business-account-id}/message_templates?name={template-name}
       const response = await this.httpClient.delete(
-        `${WhatsAppService.BASE_URL}/${options.templateId}?name=${encodeURIComponent(options.name)}`,
+        `${WhatsAppService.BASE_URL}/${options.templateId}/message_templates?name=${encodeURIComponent(options.name)}`,
         {
           Authorization: `Bearer ${options.accessToken}`,
         },

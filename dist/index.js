@@ -1032,7 +1032,7 @@ class WhatsAppService {
   async deleteTemplate(options) {
     try {
       this.validateTemplateDeleteOptions(options);
-      const response = await this.httpClient.delete(`${WhatsAppService.BASE_URL}/${options.templateId}?name=${encodeURIComponent(options.name)}`, {
+      const response = await this.httpClient.delete(`${WhatsAppService.BASE_URL}/${options.templateId}/message_templates?name=${encodeURIComponent(options.name)}`, {
         Authorization: `Bearer ${options.accessToken}`
       }, "whatsapp");
       const result = await response.json();
