@@ -1,5 +1,6 @@
 export { MessageMesh } from "./message-mesh.js";
 export { MessageMeshError } from "./types.js";
+export { EncryptionUtils } from "./security.js";
 export type {
   MessageMeshConfig,
   SendMessageResponse,

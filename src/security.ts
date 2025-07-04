@@ -1,5 +1,6 @@
 import { MessageMeshError } from "./types.js";
 import type { Platform } from "./types.js";
+import * as crypto from "crypto";
 
 /**
  * Security utilities for input validation and sanitization
@@ -222,6 +223,53 @@ export class SecurityUtils {
         platform,
         `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds before retrying`
       );
+    }
+  }
+}
+
+/**
+ * Encryption utilities for secure token storage
+ */
+export class EncryptionUtils {
+  /**
+   * Encrypt access token for secure storage
+   */
+  static encryptToken(token: string, encryptionKey: string, encryptionSalt: string): string {
+    const algorithm = "aes-256-cbc";
+    const secretKey = crypto.scryptSync(encryptionKey, encryptionSalt, 32);
+    const iv = crypto.randomBytes(16);
+
+    const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
+    let encrypted = cipher.update(token, "utf8", "hex");
+    encrypted += cipher.final("hex");
+
+    return `${iv.toString("hex")}:${encrypted}`;
+  }
+
+  /**
+   * Decrypt access token for use
+   */
+  static decryptToken(encryptedToken: string, encryptionKey: string, encryptionSalt: string): string {
+    try {
+      const algorithm = "aes-256-cbc";
+      const secretKey = crypto.scryptSync(encryptionKey, encryptionSalt, 32);
+      const parts = encryptedToken.split(":");
+      
+      if (parts.length !== 2) {
+        throw new Error("Invalid encrypted token format");
+      }
+      
+      const ivHex = parts[0]!;
+      const encrypted = parts[1]!;
+      const iv = Buffer.from(ivHex, "hex");
+
+      const decipher = crypto.createDecipheriv(algorithm, secretKey, iv);
+      let decrypted = decipher.update(encrypted, "hex", "utf8");
+      decrypted += decipher.final("utf8");
+
+      return decrypted;
+    } catch {
+      throw new Error("Failed to decrypt access token");
     }
   }
 }

@@ -561,6 +561,8 @@ class HttpClient {
 }
 
 // src/security.ts
+import * as crypto from "crypto";
+
 class SecurityUtils {
   static MAX_MESSAGE_LENGTH = 4096;
   static MAX_METADATA_SIZE = 8192;
@@ -664,6 +666,37 @@ class SecurityUtils {
     if (timeSinceLastRequest < minIntervalMs) {
       const waitTime = minIntervalMs - timeSinceLastRequest;
       throw new MessageMeshError("RATE_LIMIT_EXCEEDED", platform, `Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds before retrying`);
+    }
+  }
+}
+
+class EncryptionUtils {
+  static encryptToken(token, encryptionKey, encryptionSalt) {
+    const algorithm = "aes-256-cbc";
+    const secretKey = crypto.scryptSync(encryptionKey, encryptionSalt, 32);
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
+    let encrypted = cipher.update(token, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return `${iv.toString("hex")}:${encrypted}`;
+  }
+  static decryptToken(encryptedToken, encryptionKey, encryptionSalt) {
+    try {
+      const algorithm = "aes-256-cbc";
+      const secretKey = crypto.scryptSync(encryptionKey, encryptionSalt, 32);
+      const parts = encryptedToken.split(":");
+      if (parts.length !== 2) {
+        throw new Error("Invalid encrypted token format");
+      }
+      const ivHex = parts[0];
+      const encrypted = parts[1];
+      const iv = Buffer.from(ivHex, "hex");
+      const decipher = crypto.createDecipheriv(algorithm, secretKey, iv);
+      let decrypted = decipher.update(encrypted, "hex", "utf8");
+      decrypted += decipher.final("utf8");
+      return decrypted;
+    } catch {
+      throw new Error("Failed to decrypt access token");
     }
   }
 }
@@ -2871,12 +2904,12 @@ class WebhookManager {
   }
   verifySignature(payload, signature, options) {
     try {
-      const crypto = this.getCrypto();
-      if (!crypto) {
+      const crypto2 = this.getCrypto();
+      if (!crypto2) {
         this.logger.warn("Crypto module not available for signature verification");
         return false;
       }
-      const hmac = crypto.createHmac(options.algorithm, options.secret);
+      const hmac = crypto2.createHmac(options.algorithm, options.secret);
       hmac.update(payload, "utf8");
       const expectedSignature = hmac.digest("hex");
       const expectedSignatureWithPrefix = options.prefix ? `${options.prefix}${expectedSignature}` : expectedSignature;
@@ -3506,5 +3539,6 @@ class MessageMesh {
 }
 export {
   MessageMeshError,
-  MessageMesh
+  MessageMesh,
+  EncryptionUtils
 };

@@ -40,3 +40,16 @@ export declare class SecurityUtils {
      */
     static checkRateLimit(lastRequestTime: number, minIntervalMs: number, platform: Platform): void;
 }
+/**
+ * Encryption utilities for secure token storage
+ */
+export declare class EncryptionUtils {
+    /**
+     * Encrypt access token for secure storage
+     */
+    static encryptToken(token: string, encryptionKey: string, encryptionSalt: string): string;
+    /**
+     * Decrypt access token for use
+     */
+    static decryptToken(encryptedToken: string, encryptionKey: string, encryptionSalt: string): string;
+}
