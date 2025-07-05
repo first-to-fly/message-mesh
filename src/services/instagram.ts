@@ -225,7 +225,9 @@ export class InstagramService implements IInstagramService {
 
   // Template Management Methods
 
-  async createTemplate(options: InstagramTemplateCreateOptions): Promise<InstagramTemplateResponse> {
+  async createTemplate(
+    options: InstagramTemplateCreateOptions
+  ): Promise<InstagramTemplateResponse> {
     try {
       this.validateInstagramTemplateCreateOptions(options);
 
@@ -247,7 +249,7 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json() as InstagramApiResponse;
+      const result = (await response.json()) as InstagramApiResponse;
 
       if (result.id) {
         return {
@@ -262,7 +264,9 @@ export class InstagramService implements IInstagramService {
     }
   }
 
-  async updateTemplate(options: InstagramTemplateUpdateOptions): Promise<InstagramTemplateResponse> {
+  async updateTemplate(
+    options: InstagramTemplateUpdateOptions
+  ): Promise<InstagramTemplateResponse> {
     try {
       this.validateInstagramTemplateUpdateOptions(options);
 
@@ -280,7 +284,7 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json() as InstagramApiResponse;
+      const result = (await response.json()) as InstagramApiResponse;
 
       if (result.error) {
         return this.handleInstagramTemplateError(result);
@@ -297,7 +301,9 @@ export class InstagramService implements IInstagramService {
     }
   }
 
-  async deleteTemplate(options: InstagramTemplateDeleteOptions): Promise<InstagramTemplateResponse> {
+  async deleteTemplate(
+    options: InstagramTemplateDeleteOptions
+  ): Promise<InstagramTemplateResponse> {
     try {
       this.validateInstagramTemplateDeleteOptions(options);
 
@@ -309,7 +315,7 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json() as InstagramApiResponse;
+      const result = (await response.json()) as InstagramApiResponse;
 
       if (result.error) {
         return this.handleInstagramTemplateError(result);
@@ -334,7 +340,10 @@ export class InstagramService implements IInstagramService {
       if (options.fields) {
         params.append("fields", options.fields.join(","));
       } else {
-        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+        params.append(
+          "fields",
+          "id,name,status,category,language,components,quality_score,rejected_reason"
+        );
       }
 
       const response = await this.httpClient.get(
@@ -345,7 +354,7 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json() as InstagramApiResponse;
+      const result = (await response.json()) as InstagramApiResponse;
 
       if (result.id) {
         return {
@@ -360,18 +369,23 @@ export class InstagramService implements IInstagramService {
     }
   }
 
-  async listTemplates(options: InstagramTemplateListOptions): Promise<InstagramTemplateListResponse> {
+  async listTemplates(
+    options: InstagramTemplateListOptions
+  ): Promise<InstagramTemplateListResponse> {
     try {
       this.validateInstagramTemplateListOptions(options);
 
       const params = new URLSearchParams();
-      
+
       if (options.fields) {
         params.append("fields", options.fields.join(","));
       } else {
-        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+        params.append(
+          "fields",
+          "id,name,status,category,language,components,quality_score,rejected_reason"
+        );
       }
-      
+
       if (options.limit) params.append("limit", options.limit.toString());
       if (options.offset) params.append("offset", options.offset);
       if (options.status) params.append("status", options.status);
@@ -386,12 +400,14 @@ export class InstagramService implements IInstagramService {
         "instagram"
       );
 
-      const result = await response.json() as InstagramApiResponse;
+      const result = (await response.json()) as InstagramApiResponse;
 
       if (result.data) {
         return {
           success: true,
-          templates: result.data.map((template: unknown) => this.formatInstagramTemplate(template as Record<string, unknown>)),
+          templates: result.data.map((template: unknown) =>
+            this.formatInstagramTemplate(template as Record<string, unknown>)
+          ),
           paging: result.paging,
         };
       }
@@ -565,10 +581,18 @@ export class InstagramService implements IInstagramService {
       throw new MessageMeshError("INVALID_TEMPLATE_NAME", "instagram", "Template name is required");
     }
     if (!options.category) {
-      throw new MessageMeshError("INVALID_TEMPLATE_CATEGORY", "instagram", "Template category is required");
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_CATEGORY",
+        "instagram",
+        "Template category is required"
+      );
     }
     if (!options.components || options.components.length === 0) {
-      throw new MessageMeshError("INVALID_TEMPLATE_COMPONENTS", "instagram", "Template components are required");
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_COMPONENTS",
+        "instagram",
+        "Template components are required"
+      );
     }
   }
 
@@ -613,7 +637,17 @@ export class InstagramService implements IInstagramService {
       id: string;
       name: string;
       status: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
-      category: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+      category:
+        | "ACCOUNT_UPDATE"
+        | "PAYMENT_UPDATE"
+        | "PERSONAL_FINANCE_UPDATE"
+        | "SHIPPING_UPDATE"
+        | "RESERVATION_UPDATE"
+        | "ISSUE_RESOLUTION"
+        | "APPOINTMENT_UPDATE"
+        | "TRANSPORTATION_UPDATE"
+        | "FEATURE_FUNCTIONALITY_UPDATE"
+        | "TICKET_UPDATE";
       language: string;
       components: InstagramTemplateComponent[];
       created_time?: string;
@@ -625,7 +659,7 @@ export class InstagramService implements IInstagramService {
       rejected_reason?: string;
       disabled_date?: string;
     };
-    
+
     return {
       id: template.id,
       name: template.name,
@@ -635,10 +669,12 @@ export class InstagramService implements IInstagramService {
       components: template.components,
       createdTime: template.created_time,
       modifiedTime: template.modified_time,
-      qualityScore: template.quality_score ? {
-        score: template.quality_score.score,
-        date: template.quality_score.date,
-      } : undefined,
+      qualityScore: template.quality_score
+        ? {
+            score: template.quality_score.score,
+            date: template.quality_score.date,
+          }
+        : undefined,
       rejectedReason: template.rejected_reason,
       disabledDate: template.disabled_date,
     };

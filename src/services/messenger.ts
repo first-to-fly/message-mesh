@@ -330,7 +330,9 @@ export class MessengerService implements IMessengerService {
 
   // Template Management Methods
 
-  async createTemplate(options: MessengerTemplateCreateOptions): Promise<MessengerTemplateResponse> {
+  async createTemplate(
+    options: MessengerTemplateCreateOptions
+  ): Promise<MessengerTemplateResponse> {
     try {
       this.validateMessengerTemplateCreateOptions(options);
 
@@ -352,7 +354,7 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json() as MessengerApiResponse;
+      const result = (await response.json()) as MessengerApiResponse;
 
       if (result.id) {
         return {
@@ -367,7 +369,9 @@ export class MessengerService implements IMessengerService {
     }
   }
 
-  async updateTemplate(options: MessengerTemplateUpdateOptions): Promise<MessengerTemplateResponse> {
+  async updateTemplate(
+    options: MessengerTemplateUpdateOptions
+  ): Promise<MessengerTemplateResponse> {
     try {
       this.validateMessengerTemplateUpdateOptions(options);
 
@@ -385,7 +389,7 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json() as MessengerApiResponse;
+      const result = (await response.json()) as MessengerApiResponse;
 
       if (result.error) {
         return this.handleMessengerTemplateError(result);
@@ -402,7 +406,9 @@ export class MessengerService implements IMessengerService {
     }
   }
 
-  async deleteTemplate(options: MessengerTemplateDeleteOptions): Promise<MessengerTemplateResponse> {
+  async deleteTemplate(
+    options: MessengerTemplateDeleteOptions
+  ): Promise<MessengerTemplateResponse> {
     try {
       this.validateMessengerTemplateDeleteOptions(options);
 
@@ -414,7 +420,7 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json() as MessengerApiResponse;
+      const result = (await response.json()) as MessengerApiResponse;
 
       if (result.error) {
         return this.handleMessengerTemplateError(result);
@@ -439,7 +445,10 @@ export class MessengerService implements IMessengerService {
       if (options.fields) {
         params.append("fields", options.fields.join(","));
       } else {
-        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+        params.append(
+          "fields",
+          "id,name,status,category,language,components,quality_score,rejected_reason"
+        );
       }
 
       const response = await this.httpClient.get(
@@ -450,7 +459,7 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json() as MessengerApiResponse;
+      const result = (await response.json()) as MessengerApiResponse;
 
       if (result.id) {
         return {
@@ -465,18 +474,23 @@ export class MessengerService implements IMessengerService {
     }
   }
 
-  async listTemplates(options: MessengerTemplateListOptions): Promise<MessengerTemplateListResponse> {
+  async listTemplates(
+    options: MessengerTemplateListOptions
+  ): Promise<MessengerTemplateListResponse> {
     try {
       this.validateMessengerTemplateListOptions(options);
 
       const params = new URLSearchParams();
-      
+
       if (options.fields) {
         params.append("fields", options.fields.join(","));
       } else {
-        params.append("fields", "id,name,status,category,language,components,quality_score,rejected_reason");
+        params.append(
+          "fields",
+          "id,name,status,category,language,components,quality_score,rejected_reason"
+        );
       }
-      
+
       if (options.limit) params.append("limit", options.limit.toString());
       if (options.offset) params.append("offset", options.offset);
       if (options.status) params.append("status", options.status);
@@ -491,12 +505,14 @@ export class MessengerService implements IMessengerService {
         "messenger"
       );
 
-      const result = await response.json() as MessengerApiResponse;
+      const result = (await response.json()) as MessengerApiResponse;
 
       if (result.data) {
         return {
           success: true,
-          templates: result.data.map((template: unknown) => this.formatMessengerTemplate(template as Record<string, unknown>)),
+          templates: result.data.map((template: unknown) =>
+            this.formatMessengerTemplate(template as Record<string, unknown>)
+          ),
           paging: result.paging,
         };
       }
@@ -727,10 +743,18 @@ export class MessengerService implements IMessengerService {
       throw new MessageMeshError("INVALID_TEMPLATE_NAME", "messenger", "Template name is required");
     }
     if (!options.category) {
-      throw new MessageMeshError("INVALID_TEMPLATE_CATEGORY", "messenger", "Template category is required");
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_CATEGORY",
+        "messenger",
+        "Template category is required"
+      );
     }
     if (!options.components || options.components.length === 0) {
-      throw new MessageMeshError("INVALID_TEMPLATE_COMPONENTS", "messenger", "Template components are required");
+      throw new MessageMeshError(
+        "INVALID_TEMPLATE_COMPONENTS",
+        "messenger",
+        "Template components are required"
+      );
     }
   }
 
@@ -775,7 +799,17 @@ export class MessengerService implements IMessengerService {
       id: string;
       name: string;
       status: "APPROVED" | "PENDING" | "REJECTED" | "DISABLED";
-      category: "ACCOUNT_UPDATE" | "PAYMENT_UPDATE" | "PERSONAL_FINANCE_UPDATE" | "SHIPPING_UPDATE" | "RESERVATION_UPDATE" | "ISSUE_RESOLUTION" | "APPOINTMENT_UPDATE" | "TRANSPORTATION_UPDATE" | "FEATURE_FUNCTIONALITY_UPDATE" | "TICKET_UPDATE";
+      category:
+        | "ACCOUNT_UPDATE"
+        | "PAYMENT_UPDATE"
+        | "PERSONAL_FINANCE_UPDATE"
+        | "SHIPPING_UPDATE"
+        | "RESERVATION_UPDATE"
+        | "ISSUE_RESOLUTION"
+        | "APPOINTMENT_UPDATE"
+        | "TRANSPORTATION_UPDATE"
+        | "FEATURE_FUNCTIONALITY_UPDATE"
+        | "TICKET_UPDATE";
       language: string;
       components: MessengerTemplateComponent[];
       created_time?: string;
@@ -787,7 +821,7 @@ export class MessengerService implements IMessengerService {
       rejected_reason?: string;
       disabled_date?: string;
     };
-    
+
     return {
       id: template.id,
       name: template.name,
@@ -797,10 +831,12 @@ export class MessengerService implements IMessengerService {
       components: template.components,
       createdTime: template.created_time,
       modifiedTime: template.modified_time,
-      qualityScore: template.quality_score ? {
-        score: template.quality_score.score,
-        date: template.quality_score.date,
-      } : undefined,
+      qualityScore: template.quality_score
+        ? {
+            score: template.quality_score.score,
+            date: template.quality_score.date,
+          }
+        : undefined,
       rejectedReason: template.rejected_reason,
       disabledDate: template.disabled_date,
     };

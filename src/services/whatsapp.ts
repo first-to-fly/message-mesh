@@ -386,7 +386,11 @@ export class WhatsAppService implements IWhatsAppService {
     }
     // Note: emoji can be empty string to remove reactions in WhatsApp API
     if (options.emoji === undefined || options.emoji === null) {
-      throw new MessageMeshError("INVALID_EMOJI", "whatsapp", "Emoji parameter is required (use empty string to remove reactions)");
+      throw new MessageMeshError(
+        "INVALID_EMOJI",
+        "whatsapp",
+        "Emoji parameter is required (use empty string to remove reactions)"
+      );
     }
   }
 
@@ -637,7 +641,6 @@ export class WhatsAppService implements IWhatsAppService {
     }
   }
 
-
   private extractBusinessId(_accessToken: string, businessId: string): string {
     // businessId is now required, so we can directly return it
     return businessId;
@@ -850,11 +853,7 @@ export class WhatsAppService implements IWhatsAppService {
     }
 
     if (options.limit && (options.limit < 1 || options.limit > 100)) {
-      throw new MessageMeshError(
-        "INVALID_LIMIT",
-        "whatsapp",
-        "Limit must be between 1 and 100"
-      );
+      throw new MessageMeshError("INVALID_LIMIT", "whatsapp", "Limit must be between 1 and 100");
     }
   }
 
@@ -864,16 +863,29 @@ export class WhatsAppService implements IWhatsAppService {
       displayPhoneNumber: phoneNumber.display_phone_number as string,
       verifiedName: phoneNumber.verified_name as string,
       codeVerificationStatus: phoneNumber.code_verification_status as "VERIFIED" | "UNVERIFIED",
-      status: phoneNumber.status as "CONNECTED" | "DISCONNECTED" | "MIGRATED" | "PENDING" | "DELETED",
+      status: phoneNumber.status as
+        | "CONNECTED"
+        | "DISCONNECTED"
+        | "MIGRATED"
+        | "PENDING"
+        | "DELETED",
       qualityRating: phoneNumber.quality_rating as "GREEN" | "YELLOW" | "RED" | "UNKNOWN",
       platform: phoneNumber.platform as "WHATSAPP" | "INSTAGRAM",
-      throughput: phoneNumber.throughput ? {
-        level: (phoneNumber.throughput as Record<string, unknown>).level as "STANDARD" | "HIGH_VOLUME"
-      } : undefined,
-      webhookConfiguration: phoneNumber.webhook_configuration ? {
-        application: (phoneNumber.webhook_configuration as Record<string, unknown>).application as string,
-        webhookUrl: (phoneNumber.webhook_configuration as Record<string, unknown>).webhook_url as string,
-      } : undefined,
+      throughput: phoneNumber.throughput
+        ? {
+            level: (phoneNumber.throughput as Record<string, unknown>).level as
+              | "STANDARD"
+              | "HIGH_VOLUME",
+          }
+        : undefined,
+      webhookConfiguration: phoneNumber.webhook_configuration
+        ? {
+            application: (phoneNumber.webhook_configuration as Record<string, unknown>)
+              .application as string,
+            webhookUrl: (phoneNumber.webhook_configuration as Record<string, unknown>)
+              .webhook_url as string,
+          }
+        : undefined,
     };
   }
 
