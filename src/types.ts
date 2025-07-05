@@ -179,7 +179,7 @@ export interface InstagramReplyOptions {
 // Template Management Types
 export interface TemplateCreateOptions {
   accessToken: string;
-  businessId?: string; // WhatsApp Business Account ID
+  businessId: string; // WhatsApp Business Account ID - REQUIRED
   name: string;
   category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
   language: string;
@@ -196,14 +196,13 @@ export interface TemplateUpdateOptions {
 
 export interface TemplateDeleteOptions {
   accessToken: string;
-  templateId: string;
+  businessId: string; // WhatsApp Business Account ID - REQUIRED
   name: string;
 }
 
 export interface TemplateListOptions {
   accessToken: string;
-  businessId?: string;
-  phoneNumberId?: string;
+  businessId: string; // WhatsApp Business Account ID - REQUIRED
   fields?: string[];
   limit?: number;
   offset?: string;
@@ -527,7 +526,7 @@ export interface InstagramAPIResponse {
 // Phone Number Management Types
 export interface PhoneNumberListOptions {
   accessToken: string;
-  businessId?: string;
+  businessId: string; // WhatsApp Business Account ID - REQUIRED
   fields?: string[];
   limit?: number;
 }

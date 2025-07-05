@@ -160,7 +160,7 @@ export interface InstagramReplyOptions {
 }
 export interface TemplateCreateOptions {
     accessToken: string;
-    businessId?: string;
+    businessId: string;
     name: string;
     category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
     language: string;
@@ -175,13 +175,12 @@ export interface TemplateUpdateOptions {
 }
 export interface TemplateDeleteOptions {
     accessToken: string;
-    templateId: string;
+    businessId: string;
     name: string;
 }
 export interface TemplateListOptions {
     accessToken: string;
-    businessId?: string;
-    phoneNumberId?: string;
+    businessId: string;
     fields?: string[];
     limit?: number;
     offset?: string;
@@ -475,7 +474,7 @@ export interface InstagramAPIResponse {
 }
 export interface PhoneNumberListOptions {
     accessToken: string;
-    businessId?: string;
+    businessId: string;
     fields?: string[];
     limit?: number;
 }

@@ -469,9 +469,8 @@ export class WhatsAppService implements IWhatsAppService {
         ...(options.allowCategoryChange && { allow_category_change: options.allowCategoryChange }),
       };
 
-      const businessId = options.businessId || this.extractBusinessId(options.accessToken);
       const response = await this.httpClient.post(
-        `${WhatsAppService.BASE_URL}/${businessId}/message_templates`,
+        `${WhatsAppService.BASE_URL}/${options.businessId}/message_templates`,
         JSON.stringify(payload),
         {
           Authorization: `Bearer ${options.accessToken}`,
@@ -534,7 +533,7 @@ export class WhatsAppService implements IWhatsAppService {
 
       // WhatsApp API expects: DELETE /{whatsapp-business-account-id}/message_templates?name={template-name}
       const response = await this.httpClient.delete(
-        `${WhatsAppService.BASE_URL}/${options.templateId}/message_templates?name=${encodeURIComponent(options.name)}`,
+        `${WhatsAppService.BASE_URL}/${options.businessId}/message_templates?name=${encodeURIComponent(options.name)}`,
         {
           Authorization: `Bearer ${options.accessToken}`,
         },
@@ -549,7 +548,6 @@ export class WhatsAppService implements IWhatsAppService {
 
       return {
         success: true,
-        templateId: options.templateId,
       };
     } catch (error) {
       return this.handleTemplateError(error);
@@ -613,9 +611,8 @@ export class WhatsAppService implements IWhatsAppService {
       if (options.status) params.append("status", options.status);
       if (options.category) params.append("category", options.category);
 
-      const businessId = this.extractBusinessId(options.accessToken, options.businessId);
       const response = await this.httpClient.get(
-        `${WhatsAppService.BASE_URL}/${businessId}/message_templates?${params.toString()}`,
+        `${WhatsAppService.BASE_URL}/${options.businessId}/message_templates?${params.toString()}`,
         {
           Authorization: `Bearer ${options.accessToken}`,
         },
@@ -641,21 +638,17 @@ export class WhatsAppService implements IWhatsAppService {
   }
 
 
-  private extractBusinessId(_accessToken: string, businessId?: string): string {
-    // Use provided businessId if available, otherwise fall back to placeholder
-    if (businessId) {
-      return businessId;
-    }
-
-    // This is a placeholder - in a real implementation, you would need to
-    // extract the business ID from the access token or require it as a parameter
-    // For now, we'll use a placeholder that developers need to replace
-    return "BUSINESS_ID";
+  private extractBusinessId(_accessToken: string, businessId: string): string {
+    // businessId is now required, so we can directly return it
+    return businessId;
   }
 
   private validateTemplateCreateOptions(options: TemplateCreateOptions): void {
     if (!options.accessToken) {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
     }
     if (!options.name) {
       throw new MessageMeshError("INVALID_TEMPLATE_NAME", "whatsapp", "Template name is required");
@@ -696,8 +689,8 @@ export class WhatsAppService implements IWhatsAppService {
     if (!options.accessToken) {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
     }
-    if (!options.templateId) {
-      throw new MessageMeshError("INVALID_TEMPLATE_ID", "whatsapp", "Template ID is required");
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
     }
     if (!options.name) {
       throw new MessageMeshError("INVALID_TEMPLATE_NAME", "whatsapp", "Template name is required");
@@ -716,6 +709,9 @@ export class WhatsAppService implements IWhatsAppService {
   private validateTemplateListOptions(options: TemplateListOptions): void {
     if (!options.accessToken) {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
     }
   }
 
@@ -820,9 +816,8 @@ export class WhatsAppService implements IWhatsAppService {
 
       if (options.limit) params.append("limit", options.limit.toString());
 
-      const businessId = this.extractBusinessId(options.accessToken, options.businessId);
       const response = await this.httpClient.get(
-        `${WhatsAppService.BASE_URL}/${businessId}/phone_numbers?${params.toString()}`,
+        `${WhatsAppService.BASE_URL}/${options.businessId}/phone_numbers?${params.toString()}`,
         {
           Authorization: `Bearer ${options.accessToken}`,
         },
@@ -849,6 +844,10 @@ export class WhatsAppService implements IWhatsAppService {
 
   private validatePhoneNumberListOptions(options: PhoneNumberListOptions): void {
     SecurityUtils.validateAccessToken(options.accessToken, "whatsapp");
+
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
+    }
 
     if (options.limit && (options.limit < 1 || options.limit > 100)) {
       throw new MessageMeshError(

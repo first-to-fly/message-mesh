@@ -988,8 +988,7 @@ class WhatsAppService {
         components: options.components,
         ...options.allowCategoryChange && { allow_category_change: options.allowCategoryChange }
       };
-      const businessId = options.businessId || this.extractBusinessId(options.accessToken);
-      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${businessId}/message_templates`, JSON.stringify(payload), {
+      const response = await this.httpClient.post(`${WhatsAppService.BASE_URL}/${options.businessId}/message_templates`, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
         "Content-Type": "application/json"
       }, "whatsapp");
@@ -1032,7 +1031,7 @@ class WhatsAppService {
   async deleteTemplate(options) {
     try {
       this.validateTemplateDeleteOptions(options);
-      const response = await this.httpClient.delete(`${WhatsAppService.BASE_URL}/${options.templateId}/message_templates?name=${encodeURIComponent(options.name)}`, {
+      const response = await this.httpClient.delete(`${WhatsAppService.BASE_URL}/${options.businessId}/message_templates?name=${encodeURIComponent(options.name)}`, {
         Authorization: `Bearer ${options.accessToken}`
       }, "whatsapp");
       const result = await response.json();
@@ -1040,8 +1039,7 @@ class WhatsAppService {
         return this.handleTemplateError(result);
       }
       return {
-        success: true,
-        templateId: options.templateId
+        success: true
       };
     } catch (error) {
       return this.handleTemplateError(error);
@@ -1088,8 +1086,7 @@ class WhatsAppService {
         params.append("status", options.status);
       if (options.category)
         params.append("category", options.category);
-      const businessId = this.extractBusinessId(options.accessToken, options.businessId);
-      const response = await this.httpClient.get(`${WhatsAppService.BASE_URL}/${businessId}/message_templates?${params.toString()}`, {
+      const response = await this.httpClient.get(`${WhatsAppService.BASE_URL}/${options.businessId}/message_templates?${params.toString()}`, {
         Authorization: `Bearer ${options.accessToken}`
       }, "whatsapp");
       const result = await response.json();
@@ -1106,14 +1103,14 @@ class WhatsAppService {
     }
   }
   extractBusinessId(_accessToken, businessId) {
-    if (businessId) {
-      return businessId;
-    }
-    return "BUSINESS_ID";
+    return businessId;
   }
   validateTemplateCreateOptions(options) {
     if (!options.accessToken) {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
     }
     if (!options.name) {
       throw new MessageMeshError("INVALID_TEMPLATE_NAME", "whatsapp", "Template name is required");
@@ -1140,8 +1137,8 @@ class WhatsAppService {
     if (!options.accessToken) {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
     }
-    if (!options.templateId) {
-      throw new MessageMeshError("INVALID_TEMPLATE_ID", "whatsapp", "Template ID is required");
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
     }
     if (!options.name) {
       throw new MessageMeshError("INVALID_TEMPLATE_NAME", "whatsapp", "Template name is required");
@@ -1158,6 +1155,9 @@ class WhatsAppService {
   validateTemplateListOptions(options) {
     if (!options.accessToken) {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "whatsapp", "Access token is required");
+    }
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
     }
   }
   formatTemplate(apiTemplate) {
@@ -1230,8 +1230,7 @@ class WhatsAppService {
       }
       if (options.limit)
         params.append("limit", options.limit.toString());
-      const businessId = this.extractBusinessId(options.accessToken, options.businessId);
-      const response = await this.httpClient.get(`${WhatsAppService.BASE_URL}/${businessId}/phone_numbers?${params.toString()}`, {
+      const response = await this.httpClient.get(`${WhatsAppService.BASE_URL}/${options.businessId}/phone_numbers?${params.toString()}`, {
         Authorization: `Bearer ${options.accessToken}`
       }, "whatsapp");
       const result = await response.json();
@@ -1249,6 +1248,9 @@ class WhatsAppService {
   }
   validatePhoneNumberListOptions(options) {
     SecurityUtils.validateAccessToken(options.accessToken, "whatsapp");
+    if (!options.businessId) {
+      throw new MessageMeshError("INVALID_BUSINESS_ID", "whatsapp", "Business ID is required");
+    }
     if (options.limit && (options.limit < 1 || options.limit > 100)) {
       throw new MessageMeshError("INVALID_LIMIT", "whatsapp", "Limit must be between 1 and 100");
     }
