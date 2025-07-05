@@ -2,7 +2,7 @@
 
 A unified messaging SDK for Node.js/Bun applications that provides a simple, consistent interface for sending messages across multiple social media platforms (WhatsApp, Messenger, Instagram).
 
-[![Version](https://img.shields.io/badge/version-0.1.0-purple.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.1.1-purple.svg)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.0+-orange.svg)](https://bun.sh/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
@@ -171,6 +171,7 @@ Manage template lifecycle - create, update, delete, and check approval status:
 // Create a new template
 const createResult = await messageMesh.whatsapp.createTemplate({
   accessToken: "token",
+  businessId: "your-waba-id", // WhatsApp Business Account ID - REQUIRED
   name: "welcome_message",
   category: "MARKETING",
   language: "en",
@@ -213,6 +214,7 @@ if (statusResult.success && statusResult.template) {
 // List all templates
 const listResult = await messageMesh.whatsapp.listTemplates({
   accessToken: "token",
+  businessId: "your-waba-id", // WhatsApp Business Account ID - REQUIRED
   status: "APPROVED", // Only get approved templates
   category: "MARKETING",
   limit: 50,
@@ -235,7 +237,7 @@ const updateResult = await messageMesh.whatsapp.updateTemplate({
 // Delete template
 const deleteResult = await messageMesh.whatsapp.deleteTemplate({
   accessToken: "token",
-  templateId: "template_id",
+  businessId: "your-waba-id", // WhatsApp Business Account ID - REQUIRED
   name: "welcome_message",
 });
 ```
@@ -633,6 +635,46 @@ if (!result.success) {
 }
 ```
 
+## ⚠️ Breaking Changes (v0.1.1)
+
+### Required businessId Parameter
+
+Starting from v0.1.1, the `businessId` parameter is **required** for WhatsApp template management operations:
+
+- `createTemplate()` - now requires `businessId`
+- `listTemplates()` - now requires `businessId` 
+- `deleteTemplate()` - now requires `businessId` (removed `templateId` parameter)
+
+### Migration Guide
+
+```typescript
+// ❌ v0.1.0 (old - no longer works)
+await messageMesh.whatsapp.createTemplate({
+  accessToken: "token",
+  name: "template_name",
+  category: "MARKETING",
+  language: "en_US",
+  components: []
+});
+
+// ✅ v0.1.1+ (new - required)
+await messageMesh.whatsapp.createTemplate({
+  accessToken: "token",
+  businessId: "your-waba-id", // Now required
+  name: "template_name",
+  category: "MARKETING", 
+  language: "en_US",
+  components: []
+});
+```
+
+### Benefits of This Change
+
+- **Type Safety**: Prevents runtime errors from missing businessId
+- **Clear API**: No confusion about required vs optional parameters
+- **Better Error Messages**: Specific validation for missing configuration
+- **Reliable Operations**: Ensures proper WhatsApp API integration
+
 ## 🧪 Testing
 
 The SDK includes comprehensive tests covering all functionality:
@@ -700,10 +742,14 @@ src/
 
 - Business verification with Meta
 - WhatsApp Business API access token
-- **Phone number ID from Meta Business Manager** (required for all operations)
+- **Phone number ID from Meta Business Manager** (required for messaging operations)
+- **WhatsApp Business Account ID (WABA ID)** (required for template management)
 - Templates must be pre-approved for production
 
-> **Important**: All WhatsApp operations require a `phoneNumberId` parameter. You can obtain this from the Meta Business Manager or by calling the `getPhoneNumbers()` method.
+> **Important**: 
+> - **Messaging operations** (sendMessage, sendTemplate, etc.) require a `phoneNumberId` parameter
+> - **Template management operations** (createTemplate, listTemplates, deleteTemplate) require a `businessId` parameter (WABA ID)
+> - You can obtain these IDs from the Meta Business Manager or by calling the `getPhoneNumbers()` method
 
 ### Facebook Messenger
 
