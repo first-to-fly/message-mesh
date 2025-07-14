@@ -5,6 +5,9 @@ import type {
   MessengerMediaOptions,
   MessengerTemplateOptions,
   MessengerReplyOptions,
+  MessengerUserProfileOptions,
+  MessengerUserProfileResponse,
+  MessengerUserProfile,
   MessengerTemplateCreateOptions,
   MessengerTemplateUpdateOptions,
   MessengerTemplateDeleteOptions,
@@ -325,6 +328,43 @@ export class MessengerService implements IMessengerService {
       );
     } catch (error) {
       return this.handleError(error);
+    }
+  }
+
+  /**
+   * Get user profile information
+   */
+  async getUserProfile(options: MessengerUserProfileOptions): Promise<MessengerUserProfileResponse> {
+    try {
+      this.validateUserProfileOptions(options);
+
+      // Default fields if not specified
+      const fields = options.fields || ["first_name", "last_name", "profile_pic"];
+      const fieldsParam = fields.join(",");
+
+      const response = await this.httpClient.get(
+        `${MessengerService.BASE_URL}/${options.userId}?fields=${fieldsParam}`,
+        {
+          Authorization: `Bearer ${options.accessToken}`,
+        },
+        "messenger"
+      );
+
+      if (response.status === 200) {
+        const profile = (await response.json()) as MessengerUserProfile;
+        return {
+          success: true,
+          profile,
+        };
+      }
+
+      throw new MessageMeshError(
+        "PROFILE_FETCH_FAILED",
+        "messenger",
+        `Failed to fetch user profile: ${response.status}`
+      );
+    } catch (error) {
+      return this.handleUserProfileError(error);
     }
   }
 
@@ -794,6 +834,41 @@ export class MessengerService implements IMessengerService {
     }
   }
 
+  private validateUserProfileOptions(options: MessengerUserProfileOptions): void {
+    SecurityUtils.validateAccessToken(options.accessToken, "messenger");
+    
+    if (!options.userId || options.userId.trim().length === 0) {
+      throw new MessageMeshError(
+        "INVALID_USER_ID",
+        "messenger",
+        "User ID is required"
+      );
+    }
+
+    // Validate user ID format (should be numeric for Facebook user ID)
+    if (!/^\d+$/.test(options.userId.trim())) {
+      throw new MessageMeshError(
+        "INVALID_USER_ID_FORMAT",
+        "messenger",
+        "User ID must be a valid Facebook user ID (numeric)"
+      );
+    }
+
+    // Validate fields if provided
+    if (options.fields) {
+      const validFields = ["first_name", "last_name", "profile_pic"];
+      for (const field of options.fields) {
+        if (!validFields.includes(field)) {
+          throw new MessageMeshError(
+            "INVALID_FIELD",
+            "messenger",
+            `Invalid field: ${field}. Valid fields are: ${validFields.join(", ")}`
+          );
+        }
+      }
+    }
+  }
+
   private formatMessengerTemplate(apiTemplate: Record<string, unknown>): MessengerTemplate {
     const template = apiTemplate as {
       id: string;
@@ -880,6 +955,72 @@ export class MessengerService implements IMessengerService {
       success: false,
       error: {
         code: "MESSENGER_TEMPLATE_LIST_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "messenger",
+      },
+    };
+  }
+
+  private handleUserProfileError(error: unknown): MessengerUserProfileResponse {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: "messenger",
+        },
+      };
+    }
+
+    // Handle HTTP-specific errors for profile fetching
+    if (error && typeof error === "object" && "status" in error) {
+      const httpError = error as { status: number; data?: unknown };
+
+      switch (httpError.status) {
+        case 400:
+          return {
+            success: false,
+            error: {
+              code: "BAD_REQUEST",
+              message: "Invalid request parameters or user ID",
+              platform: "messenger",
+            },
+          };
+        case 401:
+          return {
+            success: false,
+            error: {
+              code: "UNAUTHORIZED",
+              message: "Invalid or expired access token",
+              platform: "messenger",
+            },
+          };
+        case 403:
+          return {
+            success: false,
+            error: {
+              code: "FORBIDDEN",
+              message: "Insufficient permissions to access user profile",
+              platform: "messenger",
+            },
+          };
+        case 404:
+          return {
+            success: false,
+            error: {
+              code: "USER_NOT_FOUND",
+              message: "User profile not found or not accessible",
+              platform: "messenger",
+            },
+          };
+      }
+    }
+
+    return {
+      success: false,
+      error: {
+        code: "PROFILE_FETCH_ERROR",
         message: error instanceof Error ? error.message : "An unknown error occurred",
         platform: "messenger",
       },

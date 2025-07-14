@@ -1494,6 +1494,26 @@ class MessengerService {
       return this.handleError(error);
     }
   }
+  async getUserProfile(options) {
+    try {
+      this.validateUserProfileOptions(options);
+      const fields = options.fields || ["first_name", "last_name", "profile_pic"];
+      const fieldsParam = fields.join(",");
+      const response = await this.httpClient.get(`${MessengerService.BASE_URL}/${options.userId}?fields=${fieldsParam}`, {
+        Authorization: `Bearer ${options.accessToken}`
+      }, "messenger");
+      if (response.status === 200) {
+        const profile = await response.json();
+        return {
+          success: true,
+          profile
+        };
+      }
+      throw new MessageMeshError("PROFILE_FETCH_FAILED", "messenger", `Failed to fetch user profile: ${response.status}`);
+    } catch (error) {
+      return this.handleUserProfileError(error);
+    }
+  }
   async createTemplate(options) {
     try {
       this.validateMessengerTemplateCreateOptions(options);
@@ -1773,6 +1793,23 @@ class MessengerService {
       throw new MessageMeshError("INVALID_ACCESS_TOKEN", "messenger", "Access token is required");
     }
   }
+  validateUserProfileOptions(options) {
+    SecurityUtils.validateAccessToken(options.accessToken, "messenger");
+    if (!options.userId || options.userId.trim().length === 0) {
+      throw new MessageMeshError("INVALID_USER_ID", "messenger", "User ID is required");
+    }
+    if (!/^\d+$/.test(options.userId.trim())) {
+      throw new MessageMeshError("INVALID_USER_ID_FORMAT", "messenger", "User ID must be a valid Facebook user ID (numeric)");
+    }
+    if (options.fields) {
+      const validFields = ["first_name", "last_name", "profile_pic"];
+      for (const field of options.fields) {
+        if (!validFields.includes(field)) {
+          throw new MessageMeshError("INVALID_FIELD", "messenger", `Invalid field: ${field}. Valid fields are: ${validFields.join(", ")}`);
+        }
+      }
+    }
+  }
   formatMessengerTemplate(apiTemplate) {
     const template = apiTemplate;
     return {
@@ -1827,6 +1864,67 @@ class MessengerService {
       success: false,
       error: {
         code: "MESSENGER_TEMPLATE_LIST_ERROR",
+        message: error instanceof Error ? error.message : "An unknown error occurred",
+        platform: "messenger"
+      }
+    };
+  }
+  handleUserProfileError(error) {
+    if (error instanceof MessageMeshError) {
+      return {
+        success: false,
+        error: {
+          code: error.code,
+          message: error.message,
+          platform: "messenger"
+        }
+      };
+    }
+    if (error && typeof error === "object" && "status" in error) {
+      const httpError = error;
+      switch (httpError.status) {
+        case 400:
+          return {
+            success: false,
+            error: {
+              code: "BAD_REQUEST",
+              message: "Invalid request parameters or user ID",
+              platform: "messenger"
+            }
+          };
+        case 401:
+          return {
+            success: false,
+            error: {
+              code: "UNAUTHORIZED",
+              message: "Invalid or expired access token",
+              platform: "messenger"
+            }
+          };
+        case 403:
+          return {
+            success: false,
+            error: {
+              code: "FORBIDDEN",
+              message: "Insufficient permissions to access user profile",
+              platform: "messenger"
+            }
+          };
+        case 404:
+          return {
+            success: false,
+            error: {
+              code: "USER_NOT_FOUND",
+              message: "User profile not found or not accessible",
+              platform: "messenger"
+            }
+          };
+      }
+    }
+    return {
+      success: false,
+      error: {
+        code: "PROFILE_FETCH_ERROR",
         message: error instanceof Error ? error.message : "An unknown error occurred",
         platform: "messenger"
       }

@@ -10,6 +10,8 @@ import type {
   MessengerMediaOptions,
   MessengerTemplateOptions,
   MessengerReplyOptions,
+  MessengerUserProfileOptions,
+  MessengerUserProfileResponse,
   InstagramMessageOptions,
   InstagramMediaOptions,
   InstagramReplyOptions,
@@ -66,6 +68,9 @@ export interface IMessengerService extends IPlatformService {
   sendMedia(options: MessengerMediaOptions): Promise<SendMessageResponse>;
   sendTemplate(options: MessengerTemplateOptions): Promise<SendMessageResponse>;
   replyMessage(options: MessengerReplyOptions): Promise<SendMessageResponse>;
+  
+  // User Profile Methods
+  getUserProfile(options: MessengerUserProfileOptions): Promise<MessengerUserProfileResponse>;
   
   // Template Management Methods
   createTemplate(options: MessengerTemplateCreateOptions): Promise<MessengerTemplateResponse>;

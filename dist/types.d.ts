@@ -511,6 +511,26 @@ export interface PhoneNumberListResponse {
         platform: "whatsapp" | "messenger" | "instagram";
     };
 }
+export interface MessengerUserProfileOptions {
+    accessToken: string;
+    userId: string;
+    fields?: ("first_name" | "last_name" | "profile_pic")[];
+}
+export interface MessengerUserProfile {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    profile_pic?: string;
+}
+export interface MessengerUserProfileResponse {
+    success: boolean;
+    profile?: MessengerUserProfile;
+    error?: {
+        code: string;
+        message: string;
+        platform: "messenger";
+    };
+}
 export declare class MessageMeshError extends Error {
     code: string;
     platform: Platform;
