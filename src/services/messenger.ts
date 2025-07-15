@@ -288,6 +288,10 @@ export class MessengerService implements IMessengerService {
     try {
       this.validateReplyOptions(options);
 
+      // NOTE: Facebook Messenger API doesn't support programmatic replies like WhatsApp
+      // The reply_to field is only available in incoming webhook events, not outgoing messages
+      // So we'll send a regular message instead and add context to indicate it's a reply
+      
       const pageId = await this.extractPageId(options.accessToken);
       const payload = {
         recipient: {
@@ -296,11 +300,15 @@ export class MessengerService implements IMessengerService {
         messaging_type: "RESPONSE",
         message: {
           text: options.message,
-          reply_to: {
-            mid: options.replyToMessageId,
-          },
         },
-        metadata: options.metadata ? JSON.stringify(options.metadata) : undefined,
+        metadata: options.metadata ? JSON.stringify({
+          ...options.metadata,
+          reply_to_message_id: options.replyToMessageId,
+          is_reply: true
+        }) : JSON.stringify({
+          reply_to_message_id: options.replyToMessageId,
+          is_reply: true
+        }),
       };
 
       const response = await this.httpClient.post(
@@ -321,10 +329,23 @@ export class MessengerService implements IMessengerService {
         };
       }
 
+      // Get detailed error information from Facebook API
+      const errorText = await response.text();
+      let errorDetails = errorText;
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error) {
+          errorDetails = `${errorJson.error.message} (Code: ${errorJson.error.code}, Type: ${errorJson.error.type})`;
+        }
+      } catch {
+        // If JSON parsing fails, use the raw error text
+      }
+
       throw new MessageMeshError(
         "SEND_FAILED",
         "messenger",
-        `Failed to send reply: ${response.status}`
+        `Failed to send reply: ${response.status} - ${errorDetails}`
       );
     } catch (error) {
       return this.handleError(error);

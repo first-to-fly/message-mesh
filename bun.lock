@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "message-mesh",
+      "dependencies": {
+        "message-mesh": "https://github.com/first-to-fly/message-mesh.git",
+      },
       "devDependencies": {
         "@types/bun": "latest",
         "@typescript-eslint/eslint-plugin": "^8.36.0",
@@ -187,6 +190,8 @@
     "lodash.merge": ["lodash.merge@4.6.2", "", {}, "sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ=="],
 
     "merge2": ["merge2@1.4.1", "", {}, "sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg=="],
+
+    "message-mesh": ["message-mesh@github:first-to-fly/message-mesh#f6ed35f", { "peerDependencies": { "typescript": "^5.0.0" } }, "first-to-fly-message-mesh-f6ed35f"],
 
     "micromatch": ["micromatch@4.0.8", "", { "dependencies": { "braces": "^3.0.3", "picomatch": "^2.3.1" } }, "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA=="],
 

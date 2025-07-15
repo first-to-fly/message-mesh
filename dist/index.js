@@ -1471,12 +1471,16 @@ class MessengerService {
         },
         messaging_type: "RESPONSE",
         message: {
-          text: options.message,
-          reply_to: {
-            mid: options.replyToMessageId
-          }
+          text: options.message
         },
-        metadata: options.metadata ? JSON.stringify(options.metadata) : undefined
+        metadata: options.metadata ? JSON.stringify({
+          ...options.metadata,
+          reply_to_message_id: options.replyToMessageId,
+          is_reply: true
+        }) : JSON.stringify({
+          reply_to_message_id: options.replyToMessageId,
+          is_reply: true
+        })
       };
       const response = await this.httpClient.post(`${MessengerService.BASE_URL}/${pageId}/messages`, JSON.stringify(payload), {
         Authorization: `Bearer ${options.accessToken}`,
@@ -1489,7 +1493,15 @@ class MessengerService {
           messageId: data.message_id
         };
       }
-      throw new MessageMeshError("SEND_FAILED", "messenger", `Failed to send reply: ${response.status}`);
+      const errorText = await response.text();
+      let errorDetails = errorText;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error) {
+          errorDetails = `${errorJson.error.message} (Code: ${errorJson.error.code}, Type: ${errorJson.error.type})`;
+        }
+      } catch {}
+      throw new MessageMeshError("SEND_FAILED", "messenger", `Failed to send reply: ${response.status} - ${errorDetails}`);
     } catch (error) {
       return this.handleError(error);
     }

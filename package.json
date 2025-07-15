@@ -72,5 +72,8 @@
     "validate": "bun run ci && bun run size-check"
   },
   "type": "module",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "message-mesh": "https://github.com/first-to-fly/message-mesh.git"
+  }
 }
