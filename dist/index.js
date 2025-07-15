@@ -3637,8 +3637,324 @@ class MessageMesh {
     };
   }
 }
+// src/services/messenger-extended.ts
+var Logger2 = {
+  info: (message, metadata) => {
+    Logger.getInstance().info(message, "messenger", metadata);
+  },
+  error: (message, metadata, error) => {
+    Logger.getInstance().error(message, "messenger", metadata, error);
+  },
+  warn: (message, metadata, error) => {
+    Logger.getInstance().warn(message, "messenger", metadata, error);
+  },
+  debug: (message, metadata) => {
+    Logger.getInstance().debug(message, "messenger", metadata);
+  }
+};
+
+class MessengerExtendedService extends MessengerService {
+  static FACEBOOK_GRAPH_BASE_URL = "https://graph.facebook.com";
+  appId;
+  appSecret;
+  apiVersion;
+  constructor(httpClient, config) {
+    super(httpClient);
+    this.appId = config.appId;
+    this.appSecret = config.appSecret;
+    this.apiVersion = config.apiVersion || "v19.0";
+  }
+  async getUserPages(userAccessToken) {
+    try {
+      const url = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/${this.apiVersion}/me/accounts`;
+      const params = new URLSearchParams({
+        fields: "id,name,access_token,category,about,description,emails,phone,website,picture",
+        access_token: userAccessToken
+      });
+      Logger2.info("Fetching user's Facebook pages");
+      const response = await fetch(`${url}?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        Logger2.error("Failed to fetch user's Facebook pages", errorData);
+        throw new MessageMeshError("FACEBOOK_API_ERROR", "messenger", errorData.error?.message || "Failed to fetch pages");
+      }
+      const data = await response.json();
+      Logger2.info(`Successfully fetched ${data.data?.length || 0} pages`);
+      return data.data || [];
+    } catch (error) {
+      if (error instanceof MessageMeshError) {
+        throw error;
+      }
+      Logger2.error("Error fetching user's Facebook pages", error);
+      throw new MessageMeshError("FACEBOOK_API_ERROR", "messenger", error instanceof Error ? error.message : "Failed to fetch pages");
+    }
+  }
+  async exchangeForLongLivedUserToken(shortLivedToken) {
+    try {
+      const url = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/${this.apiVersion}/oauth/access_token`;
+      const params = new URLSearchParams({
+        grant_type: "fb_exchange_token",
+        client_id: this.appId,
+        client_secret: this.appSecret,
+        fb_exchange_token: shortLivedToken
+      });
+      Logger2.info("Exchanging short-lived user token for long-lived token");
+      const response = await fetch(`${url}?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        Logger2.error("Failed to exchange for long-lived user token", errorData);
+        throw new MessageMeshError("TOKEN_EXCHANGE_FAILED", "messenger", errorData.error?.message || "Failed to exchange token");
+      }
+      const data = await response.json();
+      Logger2.info("Successfully exchanged for long-lived user token");
+      return data;
+    } catch (error) {
+      if (error instanceof MessageMeshError) {
+        throw error;
+      }
+      Logger2.error("Error exchanging for long-lived user token", error);
+      throw new MessageMeshError("TOKEN_EXCHANGE_FAILED", "messenger", error instanceof Error ? error.message : "Failed to exchange token");
+    }
+  }
+  async getNeverExpiringPageAccessToken(pageId, userAccessToken) {
+    try {
+      Logger2.info(`Getting never-expiring page access token for page ${pageId}`);
+      const longLivedUserToken = await this.exchangeForLongLivedUserToken(userAccessToken);
+      const url = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/${this.apiVersion}/me/accounts`;
+      const params = new URLSearchParams({
+        access_token: longLivedUserToken.access_token
+      });
+      Logger2.info("Fetching page access tokens with long-lived user token");
+      const response = await fetch(`${url}?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        Logger2.error("Failed to get page access tokens", errorData);
+        throw new MessageMeshError("PAGE_TOKEN_FETCH_FAILED", "messenger", errorData.error?.message || "Failed to get page access tokens");
+      }
+      const data = await response.json();
+      const pages = data.data || [];
+      const targetPage = pages.find((page) => page.id === pageId);
+      if (!targetPage) {
+        throw new MessageMeshError("PAGE_NOT_FOUND", "messenger", `Page ${pageId} not found in user's pages`);
+      }
+      const pageAccessToken = targetPage.access_token;
+      Logger2.info("Verifying page access token expiration status");
+      const debugUrl = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/${this.apiVersion}/debug_token`;
+      const debugParams = new URLSearchParams({
+        input_token: pageAccessToken,
+        access_token: `${this.appId}|${this.appSecret}`
+      });
+      const debugResponse = await fetch(`${debugUrl}?${debugParams.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      if (debugResponse.ok) {
+        const debugData = await debugResponse.json();
+        const tokenInfo = debugData.data || {};
+        const expiresAt = tokenInfo.expires_at || 0;
+        Logger2.info(`Page access token expiration status: expires_at=${expiresAt} (0 = never expires)`);
+        return {
+          access_token: pageAccessToken,
+          expires_at: expiresAt
+        };
+      } else {
+        Logger2.warn("Could not verify token expiration, but returning token anyway");
+        return {
+          access_token: pageAccessToken,
+          expires_at: 0
+        };
+      }
+    } catch (error) {
+      if (error instanceof MessageMeshError) {
+        throw error;
+      }
+      Logger2.error(`Error getting never-expiring page access token for ${pageId}`, error);
+      throw new MessageMeshError("PAGE_TOKEN_FETCH_FAILED", "messenger", error instanceof Error ? error.message : "Failed to get page access token");
+    }
+  }
+  async getPageAccessToken(pageId, userAccessToken) {
+    try {
+      const tokenData = await this.getNeverExpiringPageAccessToken(pageId, userAccessToken);
+      if (tokenData.expires_at === 0) {
+        Logger2.info(`Successfully obtained never-expiring page access token for ${pageId}`);
+      } else {
+        Logger2.warn(`Page access token for ${pageId} expires at ${new Date(tokenData.expires_at * 1000).toISOString()}`);
+      }
+      return tokenData.access_token;
+    } catch (error) {
+      Logger2.error(`Error getting page access token for ${pageId}`, error);
+      throw error;
+    }
+  }
+  async subscribeToWebhooks(pageId, pageAccessToken, _companyId, _verifyToken) {
+    try {
+      const url = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/${this.apiVersion}/${pageId}/subscribed_apps`;
+      Logger2.info(`Subscribing app to Messenger page ${pageId} for webhook events`);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${pageAccessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          subscribed_fields: [
+            "messages",
+            "messaging_postbacks",
+            "messaging_optins",
+            "message_deliveries",
+            "message_reads"
+          ]
+        })
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        Logger2.error(`Failed to subscribe app to page ${pageId}`, errorData);
+        throw new MessageMeshError("WEBHOOK_SUBSCRIPTION_FAILED", "messenger", errorData.error?.message || "Failed to subscribe app to page");
+      }
+      const responseData = await response.json();
+      Logger2.info(`Successfully subscribed app to page ${pageId}. Response: ${JSON.stringify(responseData)}`);
+    } catch (error) {
+      if (error instanceof MessageMeshError) {
+        throw error;
+      }
+      Logger2.error(`Error subscribing app to page ${pageId}`, error);
+      throw new MessageMeshError("WEBHOOK_SUBSCRIPTION_FAILED", "messenger", error instanceof Error ? error.message : "Failed to subscribe to webhooks");
+    }
+  }
+  async validatePageToken(pageAccessToken, pageId) {
+    try {
+      const url = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/debug_token`;
+      const params = new URLSearchParams({
+        input_token: pageAccessToken,
+        access_token: `${this.appId}|${this.appSecret}`
+      });
+      Logger2.info(`Validating page access token for page ${pageId}`);
+      const response = await fetch(`${url}?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        Logger2.error(`Token validation failed: ${response.status}`, errorData);
+        return false;
+      }
+      const data = await response.json();
+      const tokenData = data.data || { is_valid: false };
+      Logger2.info(`Token validation response: is_valid=${tokenData.is_valid}, app_id=${"app_id" in tokenData ? tokenData.app_id : "N/A"}, type=${"type" in tokenData ? tokenData.type : "N/A"}`);
+      if (!tokenData.is_valid) {
+        Logger2.warn("Page access token is not valid");
+        return false;
+      }
+      const requiredPermissions = ["pages_messaging", "pages_manage_metadata"];
+      const scopes = "scopes" in tokenData ? tokenData.scopes : undefined;
+      const hasRequiredPermissions = scopes ? requiredPermissions.every((perm) => scopes.includes(perm)) : false;
+      if (!hasRequiredPermissions) {
+        Logger2.warn(`Token missing required permissions. Has: ${scopes?.join(", ") || "none"}, Needs: ${requiredPermissions.join(", ")}`);
+      }
+      return hasRequiredPermissions;
+    } catch (error) {
+      Logger2.error(`Error validating page access token for ${pageId}`, error);
+      return false;
+    }
+  }
+  async getPageProfile(pageId, pageAccessToken) {
+    try {
+      const url = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/${this.apiVersion}/${pageId}`;
+      const params = new URLSearchParams({
+        fields: "id,name,about,category,description,emails,phone,website,picture",
+        access_token: pageAccessToken
+      });
+      const response = await fetch(`${url}?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        Logger2.error(`Failed to get page profile for ${pageId}`, errorData);
+        throw new MessageMeshError("PROFILE_FETCH_FAILED", "messenger", errorData.error?.message || "Failed to get page profile");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof MessageMeshError) {
+        throw error;
+      }
+      Logger2.error(`Error getting page profile for ${pageId}`, error);
+      throw new MessageMeshError("PROFILE_FETCH_FAILED", "messenger", error instanceof Error ? error.message : "Failed to get page profile");
+    }
+  }
+  async checkWebhookSubscription(pageId, pageAccessToken) {
+    try {
+      const url = `${MessengerExtendedService.FACEBOOK_GRAPH_BASE_URL}/${this.apiVersion}/${pageId}/subscribed_apps`;
+      Logger2.info(`Checking app subscription for Messenger page ${pageId}`);
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${pageAccessToken}`,
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        Logger2.warn(`App subscription check failed: ${response.status}`, errorData);
+        return false;
+      }
+      const data = await response.json();
+      Logger2.info(`App subscription response: ${JSON.stringify(data)}`);
+      const apps = data.data || [];
+      const isOurAppSubscribed = apps.some((app) => app.id === this.appId);
+      Logger2.info(`Our app (${this.appId}) subscription status for page ${pageId}: ${isOurAppSubscribed ? "subscribed" : "not subscribed"}`);
+      if (isOurAppSubscribed) {
+        const ourApp = apps.find((app) => app.id === this.appId);
+        if (ourApp) {
+          Logger2.info(`Subscribed fields for our app: ${JSON.stringify(ourApp)}`);
+        }
+      }
+      return isOurAppSubscribed;
+    } catch (error) {
+      Logger2.error(`Error checking app subscription for page ${pageId}`, error);
+      return false;
+    }
+  }
+  async sendTestMessage(pageAccessToken, recipientId, message) {
+    try {
+      await this.sendMessage({
+        accessToken: pageAccessToken,
+        to: recipientId,
+        message
+      });
+      return true;
+    } catch (error) {
+      Logger2.error("Error sending test message", error);
+      return false;
+    }
+  }
+}
 export {
+  MessengerExtendedService,
   MessageMeshError,
   MessageMesh,
+  HttpClient,
   EncryptionUtils
 };
