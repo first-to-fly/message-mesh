@@ -3638,18 +3638,26 @@ class MessageMesh {
   }
 }
 // src/services/messenger-extended.ts
+var toLogMetadata = (data) => {
+  if (!data)
+    return;
+  if (typeof data === "object" && data !== null) {
+    return data;
+  }
+  return { data };
+};
 var Logger2 = {
   info: (message, metadata) => {
-    Logger.getInstance().info(message, "messenger", metadata);
+    Logger.getInstance().info(message, "messenger", toLogMetadata(metadata));
   },
   error: (message, metadata, error) => {
-    Logger.getInstance().error(message, "messenger", metadata, error);
+    Logger.getInstance().error(message, "messenger", toLogMetadata(metadata), error);
   },
   warn: (message, metadata, error) => {
-    Logger.getInstance().warn(message, "messenger", metadata, error);
+    Logger.getInstance().warn(message, "messenger", toLogMetadata(metadata), error);
   },
   debug: (message, metadata) => {
-    Logger.getInstance().debug(message, "messenger", metadata);
+    Logger.getInstance().debug(message, "messenger", toLogMetadata(metadata));
   }
 };
 

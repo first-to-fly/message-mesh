@@ -1,42 +1,31 @@
 import type { IMessengerService } from "../interfaces.js";
-import type {
-  SendMessageResponse,
-  MessengerMessageOptions,
-  MessengerMediaOptions,
-  MessengerTemplateOptions,
-  MessengerReplyOptions,
-  MessengerUserProfileOptions,
-  MessengerUserProfileResponse,
-  MessengerUserProfile,
-  MessengerTemplateCreateOptions,
-  MessengerTemplateUpdateOptions,
-  MessengerTemplateDeleteOptions,
-  MessengerTemplateListOptions,
-  MessengerTemplateStatusOptions,
-  MessengerTemplateResponse,
-  MessengerTemplateListResponse,
-  MessengerTemplate,
-  MessengerTemplateComponent,
-} from "../types.js";
 import { HttpClient } from "../http-client.js";
 import { MessageMeshError } from "../types.js";
-import { SecurityUtils } from "../security.js";
 import { MessengerService } from "./messenger.js";
 import { Logger as LoggerClass } from "../logger.js";
 
+// Helper to convert unknown to Record<string, any>
+const toLogMetadata = (data?: unknown): Record<string, any> | undefined => {
+  if (!data) return undefined;
+  if (typeof data === 'object' && data !== null) {
+    return data as Record<string, any>;
+  }
+  return { data };
+};
+
 // Create a static logger wrapper to match the crm-be Logger API
 const Logger = {
-  info: (message: string, metadata?: any) => {
-    LoggerClass.getInstance().info(message, "messenger", metadata);
+  info: (message: string, metadata?: unknown) => {
+    LoggerClass.getInstance().info(message, "messenger", toLogMetadata(metadata));
   },
-  error: (message: string, metadata?: any, error?: Error) => {
-    LoggerClass.getInstance().error(message, "messenger", metadata, error);
+  error: (message: string, metadata?: unknown, error?: Error) => {
+    LoggerClass.getInstance().error(message, "messenger", toLogMetadata(metadata), error);
   },
-  warn: (message: string, metadata?: any, error?: Error) => {
-    LoggerClass.getInstance().warn(message, "messenger", metadata, error);
+  warn: (message: string, metadata?: unknown, error?: Error) => {
+    LoggerClass.getInstance().warn(message, "messenger", toLogMetadata(metadata), error);
   },
-  debug: (message: string, metadata?: any) => {
-    LoggerClass.getInstance().debug(message, "messenger", metadata);
+  debug: (message: string, metadata?: unknown) => {
+    LoggerClass.getInstance().debug(message, "messenger", toLogMetadata(metadata));
   }
 };
 
